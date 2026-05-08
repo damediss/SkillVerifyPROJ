@@ -1,0 +1,24 @@
+# Backend
+backend/target/
+backend/.classpath
+backend/.project
+backend/.settings/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/.npm-cache/
+
+# IDE & OS
+.idea/
+*.iml
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Local secrets (never commit)
+.env
+.env.local
+**/application-local.yml
+**/application-secret.yml

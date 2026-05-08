@@ -1,0 +1,27 @@
+{
+  "name": "skill-verify-web",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "typecheck": "node ./node_modules/vue-tsc/bin/vue-tsc.js --noEmit",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@ant-design/icons-vue": "^7.0.1",
+    "ant-design-vue": "^4.2.6",
+    "axios": "^1.9.0",
+    "pinia": "^3.0.2",
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.3",
+    "@vitejs/plugin-vue": "5.2.3",
+    "typescript": "~5.8.3",
+    "vite": "5.4.11",
+    "vue-tsc": "^2.2.10"
+  }
+}

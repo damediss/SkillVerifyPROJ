@@ -1,0 +1,35 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: skillverify-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: skillverify
+      MYSQL_USER: skillverify
+      MYSQL_PASSWORD: skillverify
+    ports:
+      - "3306:3306"
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
+    volumes:
+      - skillverify-mysql-data:/var/lib/mysql
+
+  # 可选：当前骨架后端不依赖 MinIO；需做文件服务时再启动（见 README）
+  minio:
+    profiles: ["storage"]
+    image: minio/minio:latest
+    container_name: skillverify-minio
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: minio_minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    command: server /data --console-address ":9001"
+    volumes:
+      - skillverify-minio-data:/data
+
+volumes:
+  skillverify-mysql-data:
+  skillverify-minio-data:
