@@ -27,7 +27,7 @@ onMounted(async () => {
 <template>
   <a-typography-title :level="4">系统骨架</a-typography-title>
   <a-typography-paragraph type="secondary">
-    Vue 3 + Vite + Pinia + Ant Design Vue，后端 Spring Boot 3 + Flyway + MySQL。
+    Vue 3 + Vite + Pinia + Ant Design Vue，后端 Spring Boot 3 + MyBatis-Plus + Flyway + MySQL。
   </a-typography-paragraph>
 
   <a-spin :spinning="loading">
@@ -36,6 +36,12 @@ onMounted(async () => {
       <a-descriptions-item label="status">{{ health.status }}</a-descriptions-item>
       <a-descriptions-item label="service">{{ health.service }}</a-descriptions-item>
       <a-descriptions-item label="time">{{ health.time }}</a-descriptions-item>
+      <a-descriptions-item v-if="health.database" label="MySQL">
+        {{ health.database.status }}
+        <template v-if="health.database.metaRows != null">
+          （system_meta 行数：{{ health.database.metaRows }}）
+        </template>
+      </a-descriptions-item>
     </a-descriptions>
     <a-empty v-else-if="!loading && !errorText" description="暂无数据" />
   </a-spin>

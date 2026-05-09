@@ -1,6 +1,6 @@
 # SkillVerify — 职业技能认定管理系统（骨架）
 
-单体仓库：**Vue 3 + Vite** 前端，`backend` **Spring Boot 3 + JPA + Flyway + MySQL**，与本仓库《职业技能认定管理系统-详细需求规格说明书》及《开发周历-每周进展》对齐演进。
+单体仓库：**Vue 3 + Vite** 前端，`backend` **Spring Boot 3 + MyBatis-Plus + Flyway + MySQL**，与本仓库《职业技能认定管理系统-详细需求规格说明书》及《开发周历-每周进展》对齐演进。
 
 ## 环境要求
 
@@ -113,6 +113,8 @@ mvn spring-boot:run
 ```
 
 健康检查：<http://localhost:8080/api/v1/health>
+
+响应 `data` 中含 **`database`**：`status` 为 `UP` 时表示已通过 **MyBatis-Plus** 访问当前连接的 MySQL（并返回 `system_meta` 表行数）；启动前须保证 MySQL 已就绪，否则 Flyway 初始化失败将导致进程退出。
 
 约定响应信封：`{ "code": 0, "message": "success", "data": { ... } }`（详见需求说明书第 13 章）。
 
