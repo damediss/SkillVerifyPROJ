@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>理论考试现场工作检查清单 - 认定工作流程</title>
+    <link rel="stylesheet" href="common.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f0f2f5;
+        }
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+        .sidebar {
+            width: 220px;
+            background-color: #ffffff;
+            color: #1f2937;
+            border-right: 1px solid #e8e8e8;
+            box-shadow: 2px 0 8px rgba(0, 0, 0, 0.04);
+            padding: 16px 0;
+            flex-shrink: 0;
+            overflow-y: auto;
+        }
+        .sidebar-logo {
+            padding: 0 16px 16px;
+            border-bottom: 1px solid #f0f0f0;
+            margin-bottom: 8px;
+        }
+        .sidebar-logo h2 {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .sidebar-logo p {
+            font-size: 12px;
+            color: #8c8c8c;
+            margin-top: 4px;
+        }
+        .sidebar-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            user-select: none;
+        }
+        .sidebar-item:hover {
+            background-color: #f5f5f5;
+        }
+        .sidebar-item.active {
+            background-color: #1890ff;
+            color: #ffffff;
+        }
+        .sidebar-item.active .sidebar-arrow {
+            color: rgba(255, 255, 255, 0.9);
+        }
+        .sidebar-item-content {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .sidebar-icon {
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+        }
+        .sidebar-arrow {
+            font-size: 12px;
+            transition: transform 0.3s;
+            color: #bfbfbf;
+        }
+                .sidebar-subitem.expanded .sidebar-arrow { transform: rotate(90deg); }
+        .sidebar-item.expanded .sidebar-arrow {
+            transform: rotate(90deg);
+        }
+        .sidebar-sublist {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        .sidebar-sublist.expanded {
+            max-height: 1200px;
+        }
+        .sidebar-subitem {
+            padding: 10px 16px 10px 46px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            color: #595959;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .sidebar-subitem:hover {
+            background-color: #f5f5f5;
+            color: #1890ff;
+        }
+        .sidebar-subitem.active {
+            background-color: rgba(24, 144, 255, 0.2);
+            color: #1890ff;
+            border-right: 3px solid #1890ff;
+        }
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .header {
+            height: 64px;
+            background-color: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+        }
+        .header h1 {
+            font-size: 18px;
+            color: #1f2937;
+        }
+        .header-user {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #666;
+            font-size: 14px;
+        }
+        .content {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+        }
+
+        /* Breadcrumb */
+        .breadcrumb {
+            font-size: 13px;
+            color: #999;
+            margin-bottom: 16px;
+        }
+        .breadcrumb a {
+            color: #1890ff;
+            text-decoration: none;
+        }
+        .breadcrumb a:hover {
+            color: #40a9ff;
+        }
+        .breadcrumb span {
+            margin: 0 8px;
+            color: #d9d9d9;
+        }
+
+        /* Page Header */
+        .page-header-section {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        .page-header-section h1 {
+            font-size: 22px;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+        .page-header-section p {
+            font-size: 14px;
+            color: #666;
+        }
+
+        /* Form Container */
+        .form-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        /* Basic Info Section */
+        .basic-info-section {
+            margin-bottom: 32px;
+            padding-bottom: 24px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        .section-title {
+            font-size: 16px;
+            color: #1f2937;
+            margin-bottom: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+        .form-item {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .form-item label {
+            font-size: 14px;
+            color: #666;
+            font-weight: 500;
+        }
+        .form-item input[type="text"],
+        .form-item input[type="date"],
+        .form-item input[type="time"],
+        .form-item select {
+            padding: 10px 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        .form-item input:focus,
+        .form-item select:focus {
+            outline: none;
+            border-color: #1890ff;
+            box-shadow: 0 0 0 3px rgba(24, 144, 255, 0.1);
+        }
+
+        /* Checklist Section */
+        .checklist-section {
+            margin-bottom: 32px;
+        }
+        .checklist-category {
+            margin-bottom: 24px;
+        }
+        .category-title {
+            font-size: 15px;
+            color: #1f2937;
+            margin-bottom: 16px;
+            padding: 12px 16px;
+            background: #f8fafc;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+        .checklist-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        .checklist-table th {
+            background: #fafafa;
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+            color: #1f2937;
+            border-bottom: 1px solid #e8e8e8;
+        }
+        .checklist-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f0f0f0;
+            color: #666;
+        }
+        .checklist-table tr:hover {
+            background: #f8fafc;
+        }
+        .checklist-table input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #1890ff;
+        }
+        .checklist-table input[type="text"] {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .checklist-table input[type="text"]:focus {
+            outline: none;
+            border-color: #1890ff;
+        }
+        .checklist-table select {
+            padding: 8px 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 14px;
+            background: white;
+        }
+
+        /* Status Badge */
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .status-normal {
+            background: #f6ffed;
+            color: #52c41a;
+        }
+        .status-abnormal {
+            background: #fff2f0;
+            color: #ff4d4f;
+        }
+        .status-na {
+            background: #f5f5f5;
+            color: #999;
+        }
+
+        /* Signature Section */
+        .signature-section {
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 2px solid #f0f0f0;
+        }
+        .signature-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+        }
+        .signature-item {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .signature-item label {
+            font-size: 14px;
+            color: #666;
+            font-weight: 500;
+        }
+        .signature-box {
+            border: 2px dashed #d9d9d9;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            color: #999;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .signature-box:hover {
+            border-color: #1890ff;
+            color: #1890ff;
+        }
+
+        /* Footer Actions */
+        .footer-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid #e8e8e8;
+        }
+        .footer-actions .right {
+            display: flex;
+            gap: 12px;
+        }
+        .button {
+            display: inline-flex;
+            align-items: center;
+            padding: 10px 24px;
+            background: #1890ff;
+            color: white;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+        .button:hover {
+            background: #40a9ff;
+        }
+        .button-secondary {
+            display: inline-flex;
+            align-items: center;
+            padding: 10px 24px;
+            background: white;
+            color: #666;
+            border: 1px solid #d9d9d9;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        .button-secondary:hover {
+            color: #1890ff;
+            border-color: #1890ff;
+        }
+        .button-success {
+            display: inline-flex;
+            align-items: center;
+            padding: 10px 24px;
+            background: #52c41a;
+            color: white;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+        .button-success:hover {
+            background: #73d13d;
+        }
+
+        /* Photo Upload Button */
+        .btn-photo {
+            padding: 6px 12px;
+            background: #e6f7ff;
+            color: #1890ff;
+            border: 1px solid #91d5ff;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .btn-photo:hover {
+            background: #bae7ff;
+        }
+        .btn-photo.uploaded {
+            background: #f6ffed;
+            color: #52c41a;
+            border-color: #b7eb8f;
+        }
+        .photo-status {
+            font-size: 12px;
+            color: #999;
+            margin-left: 8px;
+        }
+        .photo-status.has-photo {
+            color: #52c41a;
+        }
+
+        /* Progress Overview */
+        .progress-overview {
+            background: linear-gradient(135deg, #f6ffed 0%, #f0f7ff 100%);
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .progress-info {
+            display: flex;
+            gap: 32px;
+        }
+        .progress-item {
+            text-align: center;
+        }
+        .progress-item .number {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1890ff;
+        }
+        .progress-item .label {
+            font-size: 13px;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .form-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 60px;
+            }
+            .sidebar-logo h2, .sidebar-logo p,
+            .sidebar-item span:not(.sidebar-icon),
+            .sidebar-arrow {
+                display: none;
+            }
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            .signature-grid {
+                grid-template-columns: 1fr;
+            }
+            .progress-info {
+                flex-direction: column;
+                gap: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 侧边栏 -->
+        <div class="sidebar">
+            <div class="sidebar-logo">
+                <h2>认定工作流程</h2>
+                <p>系统原型</p>
+            </div>
+            
+            <!-- 数据面板 -->
+            <div class="sidebar-item" onclick="window.location.href='数据面板.html'">
+                <div class="sidebar-item-content">
+                    <span class="sidebar-icon">📊</span>
+                    <span>数据面板</span>
+                </div>
+            </div>
+            
+            <!-- 项目管理 - 可展开 -->
+            <div class="sidebar-item" id="projectMenu">
+                <div class="sidebar-item-content">
+                    <span class="sidebar-icon">📁</span>
+                    <span>任务管理</span>
+                </div>
+                <span class="sidebar-arrow">▶</span>
+            </div>
+            <div class="sidebar-sublist" id="projectSubmenu">
+                <div class="sidebar-subitem" onclick="window.location.href='项目管理首页.html'">
+                    <span>📋</span> 任务准备
+                </div>
+                <div class="sidebar-subitem" onclick="window.location.href='我要下单.html'">
+                    <span>🛒</span> 我要下单
+                </div>
+                <div class="sidebar-subitem" id="archiveMenu" onclick="toggleArchiveSubmenu(event)">
+                    <span>📦</span> 任务档案
+                    <span class="sidebar-arrow" style="margin-left: auto;">▶</span>
+                </div>
+                <div class="sidebar-sublist" id="archiveSubmenu">
+                    <div class="sidebar-subitem" onclick="window.location.href='考试材料.html'" style="padding-left: 56px;">
+                        <span>📝</span> 考试材料
+                    </div>
+                    <div class="sidebar-subitem" onclick="window.location.href='考场资料.html'" style="padding-left: 56px;">
+                        <span>🏫</span> 考场资料
+                    </div>
+                    <div class="sidebar-subitem" onclick="window.location.href='考生资料.html'" style="padding-left: 56px;">
+                        <span>👤</span> 考生资料
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 认定流程 - 可展开 -->
+            <div class="sidebar-item active expanded" id="processMenu">
+                <div class="sidebar-item-content">
+                    <span class="sidebar-icon">📋</span>
+                    <span>认定流程</span>
+                </div>
+                <span class="sidebar-arrow">▶</span>
+            </div>
+            <div class="sidebar-sublist expanded" id="processSubmenu">
+                <div class="sidebar-subitem" onclick="window.location.href='任务选择.html'">
+                    <span>🏠</span> 任务选择
+                </div>
+                <div class="sidebar-subitem" onclick="window.location.href='认定流程首页.html'">
+                    <span>📌</span> 流程首页
+                </div>
+                <div class="sidebar-subitem" onclick="window.location.href='认定筹备.html'">
+                    <span>🔧</span> 认定筹备
+                </div>
+                <div class="sidebar-subitem" onclick="window.location.href='认定前.html'">
+                    <span>📅</span> 认定前
+                </div>
+                <div class="sidebar-subitem active" onclick="window.location.href='理论笔试.html'">
+                    <span>📝</span> 理论笔试
+                </div>
+                <div class="sidebar-subitem" onclick="window.location.href='实操考试.html'">
+                    <span>🔨</span> 实操考试
+                </div>
+                <div class="sidebar-subitem" onclick="window.location.href='认定归档.html'">
+                    <span>📦</span> 认定归档
+                </div>
+            </div>
+        </div>
+        
+        <!-- 主内容区 -->
+        <div class="main-content">
+            <!-- 顶部栏 -->
+            <div class="header">
+                <h1>理论考试现场工作检查清单</h1>
+                <div class="header-user">
+                    <span>👤 管理员</span>
+                    <span>|</span>
+                    <span>2026-04-15</span>
+                </div>
+            </div>
+            
+            <!-- 内容区 -->
+            <div class="content">
+                <!-- Breadcrumb -->
+                <div class="breadcrumb">
+                    <a href="任务选择.html">↩ 项目选择</a>
+                    <span>/</span>
+                    <a href="认定流程首页.html">认定流程</a>
+                    <span>/</span>
+                    <a href="理论笔试.html">理论笔试</a>
+                    <span>/</span>
+                    <span>现场工作检查清单</span>
+                </div>
+
+                <!-- 页面标题区 -->
+                <div class="page-header-section">
+                    <h1>📋 理论考试现场工作检查清单</h1>
+                    <p>对理论考试现场各项工作进行检查确认，确保考试顺利进行</p>
+                </div>
+
+                <!-- 进度概览 -->
+                <div class="progress-overview">
+                    <div class="progress-info">
+                        <div class="progress-item">
+                            <div class="number" id="totalItems">20</div>
+                            <div class="label">检查项目总数</div>
+                        </div>
+                        <div class="progress-item">
+                            <div class="number" id="checkedItems">0</div>
+                            <div class="label">已检查项目</div>
+                        </div>
+                        <div class="progress-item">
+                            <div class="number" id="normalItems">0</div>
+                            <div class="label">正常项目</div>
+                        </div>
+                        <div class="progress-item">
+                            <div class="number" id="abnormalItems">0</div>
+                            <div class="label">异常项目</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 表单容器 -->
+                <div class="form-container">
+                    <!-- 基本信息 -->
+                    <div class="basic-info-section">
+                        <h3 class="section-title">📋 基本信息</h3>
+                        <div class="form-grid">
+                            <div class="form-item">
+                                <label>考试日期</label>
+                                <input type="date" id="examDate" value="2026-04-15">
+                            </div>
+                            <div class="form-item">
+                                <label>考试时间</label>
+                                <input type="text" id="examTime" value="09:00-11:00" placeholder="如：09:00-11:00">
+                            </div>
+                            <div class="form-item">
+                                <label>考场编号</label>
+                                <input type="text" id="examRoom" value="A101" placeholder="请输入考场编号">
+                            </div>
+                            <div class="form-item">
+                                <label>考试地点</label>
+                                <input type="text" id="examLocation" value="教学楼A栋" placeholder="请输入考试地点">
+                            </div>
+                            <div class="form-item">
+                                <label>监考人员</label>
+                                <input type="text" id="invigilator" value="张三、李四" placeholder="请输入监考人员姓名">
+                            </div>
+                            <div class="form-item">
+                                <label>巡考人员</label>
+                                <input type="text" id="patrol" value="王五" placeholder="请输入巡考人员姓名">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 考前准备检查 -->
+                    <div class="checklist-section">
+                        <div class="checklist-category">
+                            <h4 class="category-title">一、考前准备检查</h4>
+                            <table class="checklist-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 60px;">序号</th>
+                                        <th>检查项目</th>
+                                        <th style="width: 120px;">检查结果</th>
+                                        <th style="width: 200px;">备注说明</th>
+                                        <th style="width: 120px;">现场照片</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>1</td>
+                                        <td>考场环境整洁，桌椅摆放整齐</td>
+                                        <td>
+                                            <select class="check-result" onchange="updateCheckStatus(this)">
+                                                <option value="">请选择</option>
+                                                <option value="normal">正常</option>
+                                                <option value="abnormal">异常</option>
+                                                <option value="na">不适用</option>
+                                            </select>
+                                        </td>
+                                        <td><input type="text" placeholder="如有异常请说明"></td>
+                                        <td>
+                                            <button class="btn-photo" onclick="uploadPhoto(this, 'photo1')">
+                                                <span>📷</span> 添加照片
+                                            </button>
+                                            <span class="photo-status" id="photo1-status"></span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>2</td>
+                                        <td>考场标识、座位号清晰可见</td>
+                                        <td>
+                                            <select class="check-result" onchange="updateCheckStatus(this)">
+                                                <option value="">请选择</option>
+                                                <option value="normal">正常</option>
+                                                <option value="abnormal">异常</option>
+                                                <option value="na">不适用</option>
+                                            </select>
+                                        </td>
+                                        <td><input type="text" placeholder="如有异常请说明"></td>
+                                        <td>
+                                            <button class="btn-photo" onclick="uploadPhoto(this, 'photo2')">
+                                                <span>📷</span> 添加照片
+                                            </button>
+                                            <span class="photo-status" id="photo2-status"></span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>3</td>
+                                        <td>监控设备正常运行，画面清晰</td>
+                                        <td>
+                                            <select class="check-result" onchange="updateCheckStatus(this)">
+                                                <option value="">请选择</option>
+                                                <option value="normal">正常</option>
+                                                <option value="abnormal">异常</option>
+                                                <option value="na">不适用</option>
+                                            </select>
+                                        </td>
+                                        <td><input type="text" placeholder="如有异常请说明"></td>
+                                        <td>-</td>
+                                    </tr>
+                                    <tr>
+                                        <td>4</td>
+                                        <td>广播/音响设备正常，音量适中</td>
+                                        <td>
+                                            <select class="check-result" onchange="updateCheckStatus(this)">
+                                                <option value="">请选择</option>
+                                                <option value="normal">正常</option>
+                                                <option value="abnormal">异常</option>
+                                                <option value="na">不适用</option>
+                                            </select>
+                                        </td>
+                                        <td><input type="text" placeholder="如有异常请说明"></td>
+                                        <td>-</td>
+                                    </tr>
+                                    <tr>
+                                        <td>5</td>
+                                        <td>时钟/计时器时间准确</td>
+                                        <td>
+                                            <select class="check-result" onchange="updateCheckStatus(this)">
+                                                <option value="">请选择</option>
+                                                <option value="normal">正常</option>
+                                                <option value="abnormal">异常</option>
+                                                <option value="na">不适用</option>
+                                            </select>
+                                        </td>
+                                        <td><input type="text" placeholder="如有异常请说明"></td>
+                                        <td>-</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- 考试材料检查 -->
+                        <div class="checklist-category">
+                            <h4 class="category-title">二、考试材料检查</h4>
+                            <table class="checklist-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 60px;">序号</th>
+                                        <th>检查项目</th>
+                                        <th style="width: 120px;">检查结果</th>
+                                        <th style="width: 200px;">备注说明</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>6</td>
+                                        <td>考试试卷密封完好，数量准确</td>
+                                        <td>
+                                            <select class="check-result" onchange="updateCheckStatus(this)">
+                                                <option value="">请选择</option>
+                                                <option value="normal">正常</option>
+                                                <option value="abnormal">异常</option>
+                                                <option value="na">不适用</option>
+                                            </select>
+                                        </td>
+                                        <td><input type="text" placeholder="如有异常请说明"></td>
+                                    </tr>
+                                    <tr>
+                                        <td>7</td>
+                                        <td>答题卡/答题纸数量充足</td>
+                                        <td>
+                                            <select class="check-result" onchange="updateCheckStatus(this)">
+                                                <option value="">请选择</option>
+                                                <option value="normal">正常</option>
+                                                <option value="abnormal">异常</option>
+                                                <option value="na">不适用</option>
+                                            </select>
+                                        </td>
+                                        <td><input type="text" placeholder="如有异常请说明"></td>
+                                    </tr>
+                                    <tr>
+                                        <td>8</td>
+                                        <td>草稿纸准备充足</td>
+                                        <td>
+                                            <select class="check-result" onchange="updateCheckStatus(this)">
+                                                <option value="">请选择</option>
+                                                <option value="normal">正常</option>
+                                                <option value="abnormal">异常</option>
+                                                <option value="na">不适用</option>
+                                            </select>
+                                        </td>
+                                        <td><input type="text" placeholder="如有异常请说明"></td>
+                                    </tr>
+                                    <tr>
+                                        <td>9</td>
+                                        <td>考生签到表准备就绪</td>
+                                        <td>
+                                            <select class="check-result" onchange="updateCheckStatus(this)">
+                                                <option value="">请选择</option>
+                                                <option value="normal">正常</option>
+                                                <option value="abnormal">异常</option>
+                                                <option value="na">不适用</option>
+                                            </select>
+                                        </td>
+                                        <td><input type="text" placeholder="如有异常请说明"></td>
+                                    </tr>
+                                    <tr>
+                                        <td>10</td>
+                                        <td>考场规则告示张贴到位</td>
+                                        <td>
+                                            <select class="check-result" onchange="updateCheckStatus(this)">
+                                                <option value="">请选择</option>
+                                                <option value="normal">正常</option>
+                                                <option value="abnormal">异常</option>
+                                                <option value="na">不适用</option>
+                                            </select>
+                                        </td>
+                                        <td><input type="text" placeholder="如有异常请说明"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- 设备设施检查 -->
+                        <div class="checklist-category">
+                            <h4 class="category-title">三、设备设施检查</h4>
+                            <table class="checklist-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 60px;">序号</th>
+                                        <th>检查项目</th>
+                                        <th style="width: 120px;">检查结果</th>
+                                        <th style="width: 200px;">备注说明</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>11</td>
+                                        <td>照明设备正常，光线充足</td>
+                                        <td>
+                                            <select class="check-result" onchange="updateCheckStatus(this)">
+                                                <option value="">请选择</option>
+                                                <option value="normal">正常</option>
+                                                <option value="abnormal">异常</option>
+                                                <option value="na">不适用</option>
+                                            </select>
+                                        </td>
+                                        <td><input type="text" placeholder="如有异常请说明"></td>
+                                    </tr>
+                                    <tr>
+                                        <td>12</td>
+                                        <td>空调/通风设备运行正常</td>
+                                        <td>
+                                            <select class="check-result" onchange="updateCheckStatus(this)">
+                                                <option value="">请选择</option>
+                                                <option value="normal">正常</option>
+                                                <option value="abnormal">异常</option>
+                                                <option value="na">不适用</option>
+                                            </select>
+                                        </td>
+                                        <td><input type="text" placeholder="如有异常请说明"></td>
+                                    </tr>
+                                    <tr>
+                                        <td>13</td>
+                                        <td>网络连接稳定（如需要）</td>
+                                        <td>
+                                            <select class="check-result" onchange="updateCheckStatus(this)">
+                                                <option value="">请选择</option>
+                                                <option value="normal">正常</option>
+                                                <option value="abnormal">异常</option>
+                                                <option value="na">不适用</option>
+                                            </select>
+                                        </td>
+                                        <td><input type="text" placeholder="如有异常请说明"></td>
+                                    </tr>
+                                    <tr>
+                                        <td>14</td>
+                                        <td>电力供应正常，备用电源就绪</td>
+                                        <td>
+                                            <select class="check-result" onchange="updateCheckStatus(this)">
+                                                <option value="">请选择</option>
+                                                <option value="normal">正常</option>
+                                                <option value="abnormal">异常</option>
+                                                <option value="na">不适用</option>
+                                            </select>
+                                        </td>
+                                        <td><input type="text" placeholder="如有异常请说明"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- 考试过程检查 -->
+                        <div class="checklist-category">
+                            <h4 class="category-title">四、考试过程检查</h4>
+                            <table class="checklist-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 60px;">序号</th>
+                                        <th>检查项目</th>
+                                        <th style="width: 120px;">检查结果</th>
+                                        <th style="width: 200px;">备注说明</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>15</td>
+                                        <td>考生身份核验工作到位</td>
+                                        <td>
+                                            <select class="check-result" onchange="updateCheckStatus(this)">
+                                                <option value="">请选择</option>
+                                                <option value="normal">正常</option>
+                                                <option value="abnormal">异常</option>
+                                                <option value="na">不适用</option>
+                                            </select>
+                                        </td>
+                                        <td><input type="text" placeholder="如有异常请说明"></td>
+                                    </tr>
+                                    <tr>
+                                        <td>16</td>
+                                        <td>考生签到工作完成</td>
+                                        <td>
+                                            <select class="check-result" onchange="updateCheckStatus(this)">
+                                                <option value="">请选择</option>
+                                                <option value="normal">正常</option>
+                                                <option value="abnormal">异常</option>
+                                                <option value="na">不适用</option>
+                                            </select>
+                                        </td>
+                                        <td><input type="text" placeholder="如有异常请说明"></td>
+                                    </tr>
+                                    <tr>
+                                        <td>17</td>
+                                        <td>考试纪律维护良好</td>
+                                        <td>
+                                            <select class="check-result" onchange="updateCheckStatus(this)">
+                                                <option value="">请选择</option>
+                                                <option value="normal">正常</option>
+                                                <option value="abnormal">异常</option>
+                                                <option value="na">不适用</option>
+                                            </select>
+                                        </td>
+                                        <td><input type="text" placeholder="如有异常请说明"></td>
+                                    </tr>
+                                    <tr>
+                                        <td>18</td>
+                                        <td>试卷发放、回收流程规范</td>
+                                        <td>
+                                            <select class="check-result" onchange="updateCheckStatus(this)">
+                                                <option value="">请选择</option>
+                                                <option value="normal">正常</option>
+                                                <option value="abnormal">异常</option>
+                                                <option value="na">不适用</option>
+                                            </select>
+                                        </td>
+                                        <td><input type="text" placeholder="如有异常请说明"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- 考后工作检查 -->
+                        <div class="checklist-category">
+                            <h4 class="category-title">五、考后工作检查</h4>
+                            <table class="checklist-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 60px;">序号</th>
+                                        <th>检查项目</th>
+                                        <th style="width: 120px;">检查结果</th>
+                                        <th style="width: 200px;">备注说明</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>19</td>
+                                        <td>答题卡/试卷清点无误</td>
+                                        <td>
+                                            <select class="check-result" onchange="updateCheckStatus(this)">
+                                                <option value="">请选择</option>
+                                                <option value="normal">正常</option>
+                                                <option value="abnormal">异常</option>
+                                                <option value="na">不适用</option>
+                                            </select>
+                                        </td>
+                                        <td><input type="text" placeholder="如有异常请说明"></td>
+                                    </tr>
+                                    <tr>
+                                        <td>20</td>
+                                        <td>考试材料封装、交接完成</td>
+                                        <td>
+                                            <select class="check-result" onchange="updateCheckStatus(this)">
+                                                <option value="">请选择</option>
+                                                <option value="normal">正常</option>
+                                                <option value="abnormal">异常</option>
+                                                <option value="na">不适用</option>
+                                            </select>
+                                        </td>
+                                        <td><input type="text" placeholder="如有异常请说明"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 备注 -->
+                    <div class="checklist-section">
+                        <h3 class="section-title">📝 其他备注</h3>
+                        <div class="form-item">
+                            <textarea id="otherRemarks" rows="4" style="width: 100%; padding: 12px; border: 1px solid #d9d9d9; border-radius: 6px; font-size: 14px; resize: vertical;" placeholder="请输入其他需要说明的事项..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- 签字确认 -->
+                    <div class="signature-section">
+                        <h3 class="section-title">✍️ 签字确认</h3>
+                        <div class="signature-grid">
+                            <div class="signature-item">
+                                <label>监考人员签字</label>
+                                <div class="signature-box" onclick="showToast('签名功能开发中')">
+                                    <span>点击此处签名</span>
+                                </div>
+                            </div>
+                            <div class="signature-item">
+                                <label>巡考人员签字</label>
+                                <div class="signature-box" onclick="showToast('签名功能开发中')">
+                                    <span>点击此处签名</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Footer Actions -->
+                    <div class="footer-actions">
+                        <a class="button-secondary" href="理论笔试.html">返回理论笔试</a>
+                        <div class="right">
+                            <button class="button-secondary" onclick="saveDraft()">保存草稿</button>
+                            <button class="button-success" onclick="submitForm()">提交清单</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleArchiveSubmenu(event) {
+            event.stopPropagation();
+            const archiveMenu = document.getElementById('archiveMenu');
+            const archiveSubmenu = document.getElementById('archiveSubmenu');
+            if (!archiveMenu || !archiveSubmenu) return;
+            const arrow = archiveMenu.querySelector('.sidebar-arrow');
+            archiveMenu.classList.toggle('expanded');
+            archiveSubmenu.classList.toggle('expanded');
+            if (arrow) {
+                if (archiveMenu.classList.contains('expanded')) {
+                    arrow.style.transform = 'rotate(90deg)';
+                } else {
+                    arrow.style.transform = 'rotate(0deg)';
+                }
+            }
+        }
+
+        // 侧边栏展开/收起功能
+        document.getElementById('projectMenu').addEventListener('click', function(e) {
+            if (e.target.closest('.sidebar-subitem')) return;
+            this.classList.toggle('expanded');
+            document.getElementById('projectSubmenu').classList.toggle('expanded');
+        });
+
+        document.getElementById('processMenu').addEventListener('click', function(e) {
+            if (e.target.closest('.sidebar-subitem')) return;
+            this.classList.toggle('expanded');
+            document.getElementById('processSubmenu').classList.toggle('expanded');
+        });
+
+        // 为所有侧边栏子菜单项添加点击事件处理
+        document.querySelectorAll('.sidebar-subitem').forEach(function(item) {
+            item.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+        });
+
+        // 更新检查状态统计
+        function updateCheckStatus(select) {
+            const allSelects = document.querySelectorAll('.check-result');
+            let checked = 0;
+            let normal = 0;
+            let abnormal = 0;
+
+            allSelects.forEach(s => {
+                if (s.value !== '') {
+                    checked++;
+                    if (s.value === 'normal') normal++;
+                    if (s.value === 'abnormal') abnormal++;
+                }
+            });
+
+            document.getElementById('checkedItems').textContent = checked;
+            document.getElementById('normalItems').textContent = normal;
+            document.getElementById('abnormalItems').textContent = abnormal;
+
+            // 更新下拉框样式
+            select.className = 'check-result';
+            if (select.value === 'normal') {
+                select.style.background = '#f6ffed';
+                select.style.color = '#52c41a';
+            } else if (select.value === 'abnormal') {
+                select.style.background = '#fff2f0';
+                select.style.color = '#ff4d4f';
+            } else if (select.value === 'na') {
+                select.style.background = '#f5f5f5';
+                select.style.color = '#999';
+            } else {
+                select.style.background = 'white';
+                select.style.color = '#666';
+            }
+        }
+
+        // 上传照片
+        function uploadPhoto(btn, photoId) {
+            // 模拟照片上传过程
+            btn.innerHTML = '<span>⏳</span> 上传中...';
+            btn.disabled = true;
+
+            setTimeout(function() {
+                // 更新按钮状态为已上传
+                btn.innerHTML = '<span>✓</span> 查看照片';
+                btn.disabled = false;
+                btn.classList.add('uploaded');
+                btn.onclick = function() {
+                    showToast('查看照片功能开发中');
+                };
+
+                // 更新状态文本
+                const statusSpan = document.getElementById(photoId + '-status');
+                statusSpan.textContent = '已上传';
+                statusSpan.classList.add('has-photo');
+
+                showToast('照片上传成功');
+            }, 1500);
+        }
+
+        // 保存草稿
+        function saveDraft() {
+            showToast('草稿保存成功');
+        }
+
+        // 提交表单
+        function submitForm() {
+            const checked = document.getElementById('checkedItems').textContent;
+            const total = document.getElementById('totalItems').textContent;
+            
+            if (parseInt(checked) < parseInt(total)) {
+                showToast('请完成所有检查项目后再提交');
+                return;
+            }
+            
+            showToast('清单提交成功');
+            setTimeout(() => {
+                window.location.href = '理论笔试.html';
+            }, 1500);
+        }
+
+        // Toast 提示功能
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(0, 0, 0, 0.8);
+                color: white;
+                padding: 12px 24px;
+                border-radius: 6px;
+                font-size: 14px;
+                z-index: 9999;
+                animation: fadeIn 0.3s ease;
+            `;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            if (!document.getElementById('toast-style')) {
+                const style = document.createElement('style');
+                style.id = 'toast-style';
+                style.textContent = `
+                    @keyframes fadeIn {
+                        from { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+                        to { opacity: 1; transform: translateX(-50%) translateY(0); }
+                    }
+                    @keyframes fadeOut {
+                        from { opacity: 1; transform: translateX(-50%) translateY(0); }
+                        to { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+
+            setTimeout(() => {
+                toast.style.animation = 'fadeOut 0.3s ease';
+                setTimeout(() => {
+                    document.body.removeChild(toast);
+                }, 300);
+            }, 2000);
+        }
+    </script>
+<script src="common.js"></script>
+</body>
+</html>

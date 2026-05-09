@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>认定筹备 · 考评员配置 - 认定工作流程</title>
+  <link rel="stylesheet" href="common.css" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f0f2f5; }
+    .container { display: flex; height: 100vh; }
+    .sidebar { width: 220px; background: #fff; border-right: 1px solid #e8e8e8; padding: 16px 0; flex-shrink: 0; overflow-y: auto; }
+    .sidebar-logo { padding: 0 16px 16px; border-bottom: 1px solid #f0f0f0; margin-bottom: 8px; }
+    .sidebar-logo h2 { font-size: 16px; font-weight: 600; }
+    .sidebar-logo p { font-size: 12px; color: #8c8c8c; margin-top: 4px; }
+    .sidebar-item { padding: 12px 16px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; }
+    .sidebar-item-content { display: flex; align-items: center; gap: 10px; }
+    .sidebar-icon { width: 20px; text-align: center; }
+    .sidebar-arrow { font-size: 12px; color: #bfbfbf; transition: transform .2s ease; }
+    .sidebar-item.expanded .sidebar-arrow { transform: rotate(90deg); }
+    .sidebar-sublist { max-height: 0; overflow: hidden; transition: max-height 0.3s; }
+    .sidebar-sublist.expanded { max-height: 1200px; }
+    .sidebar-subitem { padding: 10px 16px 10px 46px; cursor: pointer; font-size: 14px; color: #595959; display: flex; gap: 8px; }
+    .sidebar-subitem:hover { background: #f5f5f5; color: #1890ff; }
+    .sidebar-subitem.active { background: rgba(24,144,255,0.2); color: #1890ff; border-right: 3px solid #1890ff; }
+    .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    .header { height: 64px; background: #fff; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .content { flex: 1; padding: 24px; overflow-y: auto; }
+    .breadcrumb { font-size: 13px; color: #999; margin-bottom: 16px; }
+    .breadcrumb a { color: #1890ff; text-decoration: none; }
+    .breadcrumb span { margin: 0 8px; color: #d9d9d9; }
+
+    .card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 16px; }
+    .card h2 { font-size: 16px; margin-bottom: 10px; }
+    .muted { color: #666; font-size: 13px; }
+
+    .toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; justify-content: space-between; }
+    .toolbar-left { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .btn { border: 1px solid #e5e7eb; background: #fff; padding: 8px 12px; border-radius: 10px; cursor: pointer; font-size: 13px; }
+    .btn.primary { background: #1890ff; color: #fff; border-color: rgba(24,144,255,.25); }
+    .btn.ghost { background: rgba(0,0,0,.04); }
+    .btn:disabled { opacity: .55; cursor: not-allowed; }
+    .input { border: 1px solid #e5e7eb; border-radius: 10px; padding: 8px 10px; font-size: 13px; min-width: 240px; }
+
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 10px 12px; border-bottom: 1px solid #f0f0f0; text-align: left; font-size: 13px; vertical-align: middle; }
+    th { color: #666; background: #fafafa; font-weight: 500; }
+    .tag { font-size: 12px; padding: 2px 8px; border-radius: 999px; border: 1px solid rgba(0,0,0,.10); background: rgba(0,0,0,.03); color: #64748b; display: inline-flex; gap: 6px; align-items: center; }
+    .tag.ok { background: rgba(16,185,129,.12); border-color: rgba(16,185,129,.22); color: #10b981; }
+    .tag.warn { background: rgba(245,158,11,.14); border-color: rgba(245,158,11,.24); color: #f59e0b; }
+    .tag.bad { background: rgba(239,68,68,.12); border-color: rgba(239,68,68,.22); color: #ef4444; }
+    .tag.leader { background: rgba(59,130,246,.14); border-color: rgba(59,130,246,.24); color: #1e40af; }
+
+    .op { display: flex; gap: 8px; align-items: center; }
+    .link { border: none; background: transparent; color: #1890ff; cursor: pointer; padding: 0; font-size: 13px; }
+    .link.danger { color: #ef4444; }
+
+    /* Modal */
+    .mask { position: fixed; inset: 0; background: rgba(0,0,0,.38); display: none; align-items: center; justify-content: center; padding: 20px; }
+    .mask.show { display: flex; }
+    .modal { width: min(900px, 100%); background: #fff; border-radius: 14px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,.25); }
+    .modal-head { padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f0f0f0; }
+    .modal-head h3 { font-size: 15px; }
+    .modal-body { padding: 16px; max-height: 70vh; overflow: auto; }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field label { font-size: 12px; color: #64748b; }
+    .select, .text { border: 1px solid #e5e7eb; border-radius: 10px; padding: 8px 10px; font-size: 13px; }
+    .modal-foot { padding: 14px 16px; display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid #f0f0f0; }
+    .hint { font-size: 12px; color: #64748b; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="sidebar">
+      <div class="sidebar-logo"><h2>认定工作流程</h2><p>系统原型</p></div>
+      <div class="sidebar-item" onclick="window.location.href='数据面板.html'">
+        <div class="sidebar-item-content"><span class="sidebar-icon">📊</span><span>数据面板</span></div>
+      </div>
+      <div class="sidebar-item expanded" id="projectMenu">
+        <div class="sidebar-item-content"><span class="sidebar-icon">📁</span><span>任务管理</span></div>
+        <span class="sidebar-arrow">▶</span>
+      </div>
+      <div class="sidebar-sublist expanded" id="projectSubmenu">
+        <div class="sidebar-subitem" onclick="window.location.href='项目管理首页.html'"><span>📋</span> 任务准备</div>
+        <div class="sidebar-subitem" onclick="window.location.href='我要下单.html'"><span>🛒</span> 我要下单</div>
+        <div class="sidebar-subitem" id="archiveMenu" onclick="toggleArchiveSubmenu(event)">
+          <span>📦</span> 任务档案<span class="sidebar-arrow" style="margin-left:auto">▶</span>
+        </div>
+        <div class="sidebar-sublist" id="archiveSubmenu">
+          <div class="sidebar-subitem" onclick="window.location.href='考试材料.html'" style="padding-left:56px"><span>📝</span> 考试材料</div>
+          <div class="sidebar-subitem" onclick="window.location.href='考场资料.html'" style="padding-left:56px"><span>🏫</span> 考场资料</div>
+          <div class="sidebar-subitem" onclick="window.location.href='考生资料.html'" style="padding-left:56px"><span>👤</span> 考生资料</div>
+        </div>
+      </div>
+      <div class="sidebar-item expanded" id="processMenu">
+        <div class="sidebar-item-content"><span class="sidebar-icon">📋</span><span>认定流程</span></div>
+        <span class="sidebar-arrow">▶</span>
+      </div>
+      <div class="sidebar-sublist expanded" id="processSubmenu"></div>
+    </div>
+
+    <div class="main-content">
+      <div class="header">
+        <h1>认定筹备 · 考评员配置</h1>
+        <span style="color:#666;font-size:14px;">👤 管理员</span>
+      </div>
+      <div class="content">
+        <div class="breadcrumb">
+          <a href="任务选择.html">项目选择</a><span>/</span>
+          <span>认定流程</span><span>/</span>
+          <span>认定筹备</span><span>/</span>
+          <span>考评员配置</span>
+        </div>
+
+        <div class="card">
+          <div class="toolbar">
+            <div class="toolbar-left">
+              <button class="btn primary" id="btnAdd">➕ 新建考评员</button>
+              <button class="btn" id="btnImport">📥 从考评员库调用</button>
+              <button class="btn ghost" id="btnReset">♻️ 清空本任务配置</button>
+            </div>
+            <div class="toolbar-left">
+              <input class="input" id="groupName" placeholder="考评组名称（如：电工实操A组）" style="min-width: 260px;" />
+              <input class="input" id="kw" placeholder="搜索姓名/证号/工种" />
+            </div>
+          </div>
+          <p class="muted" style="margin-top:10px;">
+            本页用于为当前任务配置考评员，支持手动新建、从「考评员信息」库调用，并可指定一名考评员为<strong>组长</strong>（用于审批/统筹角色示意）。
+          </p>
+        </div>
+
+        <div class="card">
+          <h2>📣 配置动作</h2>
+          <div class="toolbar" style="margin-top: 10px;">
+            <div class="toolbar-left">
+              <button class="btn primary" id="btnPush">📨 推送配置状态给考评员</button>
+              <button class="btn" id="btnDispatch">🧩 发放实操考评任务（从题库调取）</button>
+            </div>
+            <div class="toolbar-left">
+              <button class="btn ghost" id="btnOpenPortal">🔐 打开考评员工作台（权限访问）</button>
+            </div>
+          </div>
+          <p class="muted" style="margin-top:10px;">
+            流程：配置考评员小组 → 推送状态 → 发放实操任务 → 考评员创建/填写任务 → 组长复核。
+          </p>
+        </div>
+
+        <div class="card">
+          <h2>👷 已配置考评员</h2>
+          <div class="hint" style="margin-bottom:10px;">组长仅允许 1 人；若需要多组组长，可在后续扩展为“分组管理”。</div>
+          <table>
+            <thead>
+              <tr>
+                <th style="width:42px;"></th>
+                <th>姓名</th>
+                <th>证号</th>
+                <th>工种范围</th>
+                <th>有效期至</th>
+                <th>状态</th>
+                <th style="width:160px;">角色</th>
+                <th style="width:120px;">操作</th>
+              </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+          <div class="hint" id="emptyHint" style="display:none; padding:14px 6px;">暂无配置数据。请点击“新建考评员”或“从考评员库调用”。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 发放实操任务 -->
+  <div class="mask" id="dispatchMask" role="dialog" aria-modal="true">
+    <div class="modal">
+      <div class="modal-head">
+        <h3>发放实操考评任务</h3>
+        <button class="btn" id="dispatchClose">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="grid2">
+          <div class="field">
+            <label>选择实操题（来自题库）</label>
+            <select class="select" id="qSelect"></select>
+          </div>
+          <div class="field">
+            <label>截止日期（可选）</label>
+            <input class="text" id="qDue" placeholder="YYYY-MM-DD" />
+          </div>
+        </div>
+        <div class="field" style="margin-top:12px;">
+          <label>分配给考评员（可多选）</label>
+          <div id="assignList" style="display:flex; gap:10px; flex-wrap:wrap;"></div>
+          <div class="hint" style="margin-top:8px;">默认会过滤“认定任务中”的考评员；若需要强制分配，可后续扩展。</div>
+        </div>
+        <div class="card" style="margin-top:12px;">
+          <h2 style="margin-bottom:6px;">题目预览</h2>
+          <div class="hint" id="qPreview">-</div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn" id="dispatchCancel">取消</button>
+        <button class="btn primary" id="dispatchSend">发放任务</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 新建/编辑 -->
+  <div class="mask" id="editMask" role="dialog" aria-modal="true">
+    <div class="modal">
+      <div class="modal-head">
+        <h3 id="editTitle">新建考评员</h3>
+        <button class="btn" id="editClose">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="grid2">
+          <div class="field">
+            <label>姓名</label>
+            <input class="text" id="fName" placeholder="如：李伟" />
+          </div>
+          <div class="field">
+            <label>证号</label>
+            <input class="text" id="fCert" placeholder="如：KGY-2026-00001" />
+          </div>
+          <div class="field">
+            <label>工种范围</label>
+            <input class="text" id="fSkill" placeholder="如：电工 / 焊工" />
+          </div>
+          <div class="field">
+            <label>有效期至</label>
+            <input class="text" id="fExpire" placeholder="YYYY-MM-DD" />
+          </div>
+          <div class="field">
+            <label>状态</label>
+            <select class="select" id="fStatus">
+              <option value="认定筹备中">认定筹备中</option>
+              <option value="空闲">空闲</option>
+              <option value="认定任务中">认定任务中</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>备注（可选）</label>
+            <input class="text" id="fNote" placeholder="如：需提供复印件" />
+          </div>
+        </div>
+        <div class="hint" style="margin-top:10px;">提示：此处为任务侧配置；“从库调用”会复制库内信息到本任务配置，互不影响。</div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn" id="editCancel">取消</button>
+        <button class="btn primary" id="editSave">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 从库调用 -->
+  <div class="mask" id="libMask" role="dialog" aria-modal="true">
+    <div class="modal">
+      <div class="modal-head">
+        <h3>从考评员库调用</h3>
+        <button class="btn" id="libClose">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="hint" style="margin-bottom:10px;">库来源：<a href="考评员信息管理.html" target="_blank" rel="noreferrer">考评员信息管理</a>（示意数据）。勾选后点击“添加到本任务”。</p>
+        <table>
+          <thead>
+            <tr>
+              <th style="width:42px;"></th>
+              <th>姓名</th>
+              <th>证号</th>
+              <th>工种</th>
+              <th>有效期至</th>
+              <th>状态</th>
+            </tr>
+          </thead>
+          <tbody id="libTbody"></tbody>
+        </table>
+      </div>
+      <div class="modal-foot">
+        <button class="btn" id="libCancel">取消</button>
+        <button class="btn primary" id="libAdd">添加到本任务</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function toggleArchiveSubmenu(e) {
+      e.stopPropagation();
+      const m = document.getElementById('archiveMenu');
+      const s = document.getElementById('archiveSubmenu');
+      const ar = m && m.querySelector('.sidebar-arrow');
+      if (!m || !s) return;
+      m.classList.toggle('expanded');
+      s.classList.toggle('expanded');
+      if (ar) ar.style.transform = m.classList.contains('expanded') ? 'rotate(90deg)' : 'rotate(0deg)';
+    }
+  </script>
+  <script src="common.js"></script>
+  <script>
+    const STORAGE_KEY = 'prep_evaluator_config_v1'; // legacy
+    const STORAGE_MAP_KEY = 'prep_evaluator_config_by_project_v1';
+    const GROUP_KEY = 'prep_evaluator_group_v1'; // legacy
+    const GROUP_MAP_KEY = 'prep_evaluator_group_by_project_v1';
+    const NOTI_KEY = 'evaluator_notifications_v1';
+    const QB_KEY = 'practical_question_bank_v1';
+    const TASK_KEY = 'practical_tasks_v1';
+    const PROJECT_META = { projectCode: 'RD-2026-001', projectName: '认定项目（示意）' };
+
+    function getProjectCode() {
+      return localStorage.getItem('currentProjectCode') || PROJECT_META.projectCode;
+    }
+
+    function getProjectName() {
+      return localStorage.getItem('currentProjectName') || PROJECT_META.projectName;
+    }
+
+    const evaluatorLib = [
+      { name: '李伟', cert: 'KGY-2019-00812', skill: '电工', expire: '2027-06-30', status: '空闲' },
+      { name: '王芳', cert: 'KGY-2021-02103', skill: '焊工 / 钳工', expire: '2026-12-31', status: '认定筹备中' },
+      { name: '赵强', cert: 'KGY-2018-00456', skill: '汽车维修工', expire: '2025-08-15', status: '认定任务中' }
+    ];
+
+    function normalizeWorkStatus(s) {
+      const v = String(s || '').trim();
+      if (v === '认定任务中' || v === '认定筹备中' || v === '空闲') return v;
+      // legacy values: 有效/即将到期/已过期 -> 默认视为“认定筹备中”
+      return '认定筹备中';
+    }
+
+    function uuid() {
+      return 'e_' + Math.random().toString(16).slice(2) + Date.now().toString(16);
+    }
+
+    function jsonGet(key, fallback) {
+      try {
+        const raw = localStorage.getItem(key);
+        if (!raw) return fallback;
+        return JSON.parse(raw);
+      } catch {
+        return fallback;
+      }
+    }
+
+    function jsonSet(key, value) {
+      localStorage.setItem(key, JSON.stringify(value));
+    }
+
+    function load() {
+      const projectCode = getProjectCode();
+      const map = jsonGet(STORAGE_MAP_KEY, {});
+      const bucket = map && map[projectCode];
+      if (Array.isArray(bucket)) return bucket;
+      // fallback legacy and migrate into current project bucket
+      const legacy = jsonGet(STORAGE_KEY, []);
+      const arr = Array.isArray(legacy) ? legacy : [];
+      if (arr.length) {
+        map[projectCode] = arr;
+        jsonSet(STORAGE_MAP_KEY, map);
+      }
+      return arr;
+    }
+
+    function save(list) {
+      const projectCode = getProjectCode();
+      const map = jsonGet(STORAGE_MAP_KEY, {});
+      map[projectCode] = Array.isArray(list) ? list : [];
+      jsonSet(STORAGE_MAP_KEY, map);
+      // keep legacy in sync for backward compatibility (last viewed project)
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(map[projectCode]));
+    }
+
+    function ensureQuestionBank() {
+      const existing = jsonGet(QB_KEY, null);
+      if (existing && Array.isArray(existing) && existing.length) return existing;
+      const seed = [
+        {
+          id: 'QB-PR-001',
+          subject: '电工（低压）',
+          title: '电动机正反转控制线路安装与故障排查',
+          durationMin: 45,
+          steps: [
+            { name: '安全确认与工器具检查', score: 10, points: ['佩戴PPE', '断电验电', '工具完好'] },
+            { name: '线路安装（主回路/控制回路）', score: 40, points: ['接线正确', '线号清晰', '端子压接牢靠'] },
+            { name: '调试与功能验证', score: 30, points: ['正反转逻辑正确', '互锁可靠', '保护动作正常'] },
+            { name: '故障排查与恢复', score: 20, points: ['定位故障', '修复措施', '复测通过'] }
+          ]
+        },
+        {
+          id: 'QB-PR-002',
+          subject: '焊工',
+          title: '平焊/立焊成形与焊缝外观检验',
+          durationMin: 40,
+          steps: [
+            { name: '材料与设备准备', score: 15, points: ['材料规格正确', '设备接地', '参数设置'] },
+            { name: '焊接操作（平焊）', score: 35, points: ['运条稳定', '成形均匀', '飞溅控制'] },
+            { name: '焊接操作（立焊）', score: 35, points: ['摆动合理', '咬边/未焊透控制', '层间清理'] },
+            { name: '外观检验与缺陷判定', score: 15, points: ['尺寸合格', '缺陷识别', '整改建议'] }
+          ]
+        }
+      ];
+      jsonSet(QB_KEY, seed);
+      return seed;
+    }
+
+    function loadGroupMeta() {
+      const projectCode = getProjectCode();
+      const map = jsonGet(GROUP_MAP_KEY, {});
+      const bucket = map && map[projectCode];
+      if (bucket && typeof bucket === 'object') return bucket;
+      const legacy = jsonGet(GROUP_KEY, {});
+      return legacy && typeof legacy === 'object' ? legacy : {};
+    }
+
+    function saveGroupMeta(meta) {
+      const projectCode = getProjectCode();
+      const map = jsonGet(GROUP_MAP_KEY, {});
+      map[projectCode] = meta || {};
+      jsonSet(GROUP_MAP_KEY, map);
+      localStorage.setItem(GROUP_KEY, JSON.stringify(map[projectCode]));
+    }
+
+    function getGroupMeta(list) {
+      const current = loadGroupMeta();
+      const leader = list.find((x) => x.isLeader);
+      return {
+        projectCode: getProjectCode(),
+        projectName: getProjectName(),
+        groupName: (document.getElementById('groupName').value || current.groupName || '考评组（未命名）').trim() || '考评组（未命名）',
+        leaderId: leader ? leader.id : null,
+        memberIds: list.map((x) => x.id)
+      };
+    }
+
+    function persistGroupMeta() {
+      const list = load();
+      const meta = getGroupMeta(list);
+      saveGroupMeta(meta);
+    }
+
+    function pushNotification(evaluatorId, message, kind) {
+      const map = jsonGet(NOTI_KEY, {});
+      const arr = Array.isArray(map[evaluatorId]) ? map[evaluatorId] : [];
+      arr.unshift({
+        id: 'n_' + Math.random().toString(16).slice(2),
+        kind: kind || 'info',
+        message,
+        at: new Date().toISOString()
+      });
+      map[evaluatorId] = arr;
+      jsonSet(NOTI_KEY, map);
+    }
+
+    function statusTagClass(status) {
+      const v = normalizeWorkStatus(status);
+      if (v === '空闲') return 'ok';
+      if (v === '认定任务中') return 'warn';
+      if (v === '认定筹备中') return 'leader';
+      return '';
+    }
+
+    function render() {
+      const list = load();
+      const kw = (document.getElementById('kw').value || '').trim().toLowerCase();
+      const filtered = kw
+        ? list.filter((x) =>
+            [x.name, x.cert, x.skill].some((s) => (s || '').toLowerCase().includes(kw))
+          )
+        : list;
+
+      const tbody = document.getElementById('tbody');
+      tbody.innerHTML = '';
+      document.getElementById('emptyHint').style.display = list.length ? 'none' : 'block';
+      persistGroupMeta();
+
+      filtered.forEach((x) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML =
+          '<td><input type="radio" name="leaderPick" ' +
+          (x.isLeader ? 'checked' : '') +
+          ' title="设为组长" /></td>' +
+          '<td>' + escapeHtml(x.name) + (x.isLeader ? ' <span class="tag leader">组长</span>' : '') + '</td>' +
+          '<td><span style="font-family:var(--mono); font-size:12px;">' + escapeHtml(x.cert) + '</span></td>' +
+          '<td>' + escapeHtml(x.skill) + '</td>' +
+          '<td>' + escapeHtml(x.expire) + '</td>' +
+          '<td><span class="tag ' + statusTagClass(x.status) + '">' + escapeHtml(normalizeWorkStatus(x.status)) + '</span></td>' +
+          '<td>' +
+            (x.isLeader ? '<span class="tag leader">组长</span>' : '<span class="tag">成员</span>') +
+          '</td>' +
+          '<td><div class="op">' +
+            '<button class="link" data-act="edit">编辑</button>' +
+            '<button class="link danger" data-act="del">移除</button>' +
+          '</div></td>';
+
+        const leaderRadio = tr.querySelector('input[type="radio"]');
+        leaderRadio.addEventListener('change', () => setLeader(x.id));
+
+        tr.querySelector('[data-act="edit"]').addEventListener('click', () => openEdit(x.id));
+        tr.querySelector('[data-act="del"]').addEventListener('click', () => removeOne(x.id));
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    function escapeHtml(s) {
+      return String(s ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    function setLeader(id) {
+      const list = load();
+      const next = list.map((x) => ({ ...x, isLeader: x.id === id }));
+      save(next);
+      render();
+      toast('已设置组长');
+    }
+
+    function removeOne(id) {
+      const list = load().filter((x) => x.id !== id);
+      save(list);
+      render();
+      toast('已移除');
+    }
+
+    // Toast (fallback)
+    function toast(msg) {
+      const el = document.createElement('div');
+      el.className = 'toast';
+      el.textContent = msg;
+      el.style.position = 'fixed';
+      el.style.right = '18px';
+      el.style.bottom = '18px';
+      el.style.padding = '10px 12px';
+      el.style.background = 'rgba(2,6,23,.82)';
+      el.style.color = '#fff';
+      el.style.fontSize = '12px';
+      el.style.zIndex = '9999';
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 1400);
+    }
+
+    // Edit modal
+    let editingId = null;
+    const editMask = document.getElementById('editMask');
+    function openEdit(id) {
+      const list = load();
+      const cur = id ? list.find((x) => x.id === id) : null;
+      editingId = id || null;
+      document.getElementById('editTitle').textContent = id ? '编辑考评员' : '新建考评员';
+      document.getElementById('fName').value = cur?.name || '';
+      document.getElementById('fCert').value = cur?.cert || '';
+      document.getElementById('fSkill').value = cur?.skill || '';
+      document.getElementById('fExpire').value = cur?.expire || '';
+      document.getElementById('fStatus').value = normalizeWorkStatus(cur?.status || '认定筹备中');
+      document.getElementById('fNote').value = cur?.note || '';
+      editMask.classList.add('show');
+    }
+    function closeEdit() {
+      editMask.classList.remove('show');
+      editingId = null;
+    }
+
+    document.getElementById('btnAdd').addEventListener('click', () => openEdit(null));
+    document.getElementById('editClose').addEventListener('click', closeEdit);
+    document.getElementById('editCancel').addEventListener('click', closeEdit);
+    editMask.addEventListener('click', (e) => { if (e.target === editMask) closeEdit(); });
+
+    document.getElementById('editSave').addEventListener('click', () => {
+      const name = document.getElementById('fName').value.trim();
+      const cert = document.getElementById('fCert').value.trim();
+      const skill = document.getElementById('fSkill').value.trim();
+      const expire = document.getElementById('fExpire').value.trim();
+      const status = normalizeWorkStatus(document.getElementById('fStatus').value);
+      const note = document.getElementById('fNote').value.trim();
+      if (!name || !cert) {
+        toast('请填写姓名与证号');
+        return;
+      }
+      const list = load();
+      if (editingId) {
+        const next = list.map((x) =>
+          x.id === editingId ? { ...x, name, cert, skill, expire, status, note } : x
+        );
+        save(next);
+        toast('已保存');
+      } else {
+        const item = { id: uuid(), name, cert, skill, expire, status, note, isLeader: list.length === 0 };
+        const next = [item, ...list];
+        if (item.isLeader) {
+          // ensure single leader
+          next.forEach((x) => (x.isLeader = x.id === item.id));
+        }
+        save(next);
+        toast('已新增');
+      }
+      closeEdit();
+      render();
+    });
+
+    // Library modal
+    const libMask = document.getElementById('libMask');
+    const libTbody = document.getElementById('libTbody');
+    const libSelected = new Set();
+    function openLib() {
+      libSelected.clear();
+      libTbody.innerHTML = '';
+      evaluatorLib.forEach((x, idx) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML =
+          '<td><input type="checkbox" data-idx="' + idx + '"/></td>' +
+          '<td>' + escapeHtml(x.name) + '</td>' +
+          '<td><span style="font-family:var(--mono); font-size:12px;">' + escapeHtml(x.cert) + '</span></td>' +
+          '<td>' + escapeHtml(x.skill) + '</td>' +
+          '<td>' + escapeHtml(x.expire) + '</td>' +
+          '<td><span class="tag ' + statusTagClass(x.status) + '">' + escapeHtml(x.status) + '</span></td>';
+        tr.querySelector('input').addEventListener('change', (e) => {
+          const i = Number(e.target.getAttribute('data-idx'));
+          if (e.target.checked) libSelected.add(i);
+          else libSelected.delete(i);
+        });
+        libTbody.appendChild(tr);
+      });
+      libMask.classList.add('show');
+    }
+    function closeLib() { libMask.classList.remove('show'); }
+    document.getElementById('btnImport').addEventListener('click', openLib);
+    document.getElementById('libClose').addEventListener('click', closeLib);
+    document.getElementById('libCancel').addEventListener('click', closeLib);
+    libMask.addEventListener('click', (e) => { if (e.target === libMask) closeLib(); });
+
+    document.getElementById('libAdd').addEventListener('click', () => {
+      const list = load();
+      const existingCert = new Set(list.map((x) => x.cert));
+      const toAdd = Array.from(libSelected).map((i) => evaluatorLib[i]).filter(Boolean);
+      const newItems = [];
+      toAdd.forEach((x) => {
+        if (existingCert.has(x.cert)) return;
+        newItems.push({ id: uuid(), ...x, note: '来源：考评员库调用', isLeader: false });
+      });
+      const next = [...newItems, ...list];
+      if (!next.some((x) => x.isLeader) && next.length) next[0].isLeader = true;
+      // ensure only one leader
+      const leader = next.find((x) => x.isLeader);
+      if (leader) next.forEach((x) => (x.isLeader = x.id === leader.id));
+      save(next);
+      closeLib();
+      render();
+      toast(newItems.length ? ('已添加 ' + newItems.length + ' 人') : '未添加（可能已存在）');
+    });
+
+    document.getElementById('btnReset').addEventListener('click', () => {
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(GROUP_KEY);
+      render();
+      toast('已清空');
+    });
+
+    document.getElementById('kw').addEventListener('input', render);
+    document.getElementById('groupName').addEventListener('input', () => {
+      persistGroupMeta();
+    });
+
+    // Push configuration status to evaluators
+    document.getElementById('btnPush').addEventListener('click', () => {
+      const list = load();
+      if (!list.length) {
+        toast('请先配置考评员');
+        return;
+      }
+      const meta = getGroupMeta(list);
+      const leaderId = meta.leaderId;
+      if (!leaderId) {
+        toast('请先指定组长');
+        return;
+      }
+      list.forEach((x) => {
+        const role = x.id === leaderId ? '组长' : '成员';
+        pushNotification(
+          x.id,
+          `【配置通知】你已加入项目 ${meta.projectCode} 的考评组「${meta.groupName}」，角色：${role}。请前往“考评员工作台”查看任务。`,
+          'config'
+        );
+      });
+      toast('已推送配置状态');
+    });
+
+    // Dispatch practical tasks
+    const dispatchMask = document.getElementById('dispatchMask');
+    const qSelect = document.getElementById('qSelect');
+    const qPreview = document.getElementById('qPreview');
+    const assignList = document.getElementById('assignList');
+    const qDue = document.getElementById('qDue');
+    const selectedAssignees = new Set();
+
+    function openDispatch() {
+      const list = load();
+      if (!list.length) { toast('请先配置考评员'); return; }
+      const meta = getGroupMeta(list);
+      if (!meta.leaderId) { toast('请先指定组长'); return; }
+
+      const qb = ensureQuestionBank();
+      qSelect.innerHTML = '';
+      qb.forEach((q) => {
+        const opt = document.createElement('option');
+        opt.value = q.id;
+        opt.textContent = `${q.subject}｜${q.title}（${q.durationMin}min）`;
+        qSelect.appendChild(opt);
+      });
+      qSelect.value = qb[0]?.id || '';
+      qDue.value = '';
+      selectedAssignees.clear();
+
+      assignList.innerHTML = '';
+      list.filter((x) => normalizeWorkStatus(x.status) !== '认定任务中').forEach((x) => {
+        const el = document.createElement('label');
+        el.style.display = 'inline-flex';
+        el.style.alignItems = 'center';
+        el.style.gap = '6px';
+        el.style.border = '1px solid rgba(0,0,0,.10)';
+        el.style.borderRadius = '999px';
+        el.style.padding = '6px 10px';
+        el.style.cursor = 'pointer';
+        el.innerHTML = `<input type="checkbox" data-id="${x.id}"> ${escapeHtml(x.name)}${x.isLeader ? '（组长）' : ''}`;
+        const cb = el.querySelector('input');
+        cb.addEventListener('change', (e) => {
+          const id = e.target.getAttribute('data-id');
+          if (e.target.checked) selectedAssignees.add(id);
+          else selectedAssignees.delete(id);
+        });
+        assignList.appendChild(el);
+      });
+      updateQPreview();
+      dispatchMask.classList.add('show');
+    }
+    function closeDispatch() { dispatchMask.classList.remove('show'); }
+    function updateQPreview() {
+      const qb = ensureQuestionBank();
+      const q = qb.find((x) => x.id === qSelect.value);
+      if (!q) { qPreview.textContent = '-'; return; }
+      const lines = [
+        `${q.subject}｜${q.title}｜时长 ${q.durationMin} 分钟`,
+        `步骤与分值：${q.steps.map((s) => `${s.name}(${s.score})`).join('；')}`
+      ];
+      qPreview.textContent = lines.join(' / ');
+    }
+    qSelect.addEventListener('change', updateQPreview);
+
+    document.getElementById('btnDispatch').addEventListener('click', openDispatch);
+    document.getElementById('dispatchClose').addEventListener('click', closeDispatch);
+    document.getElementById('dispatchCancel').addEventListener('click', closeDispatch);
+    dispatchMask.addEventListener('click', (e) => { if (e.target === dispatchMask) closeDispatch(); });
+
+    document.getElementById('dispatchSend').addEventListener('click', () => {
+      const list = load();
+      const meta = getGroupMeta(list);
+      const qb = ensureQuestionBank();
+      const q = qb.find((x) => x.id === qSelect.value);
+      if (!q) { toast('请选择题目'); return; }
+      if (!selectedAssignees.size) { toast('请选择至少 1 名考评员'); return; }
+
+      const tasks = jsonGet(TASK_KEY, []);
+      const due = (qDue.value || '').trim();
+      const now = new Date().toISOString();
+      const newTasks = [];
+      selectedAssignees.forEach((eid) => {
+        const assignee = list.find((x) => x.id === eid);
+        if (!assignee) return;
+        const t = {
+          id: 't_' + Math.random().toString(16).slice(2) + Date.now().toString(16),
+          projectCode: meta.projectCode,
+          groupName: meta.groupName,
+          leaderId: meta.leaderId,
+          evaluatorId: assignee.id,
+          evaluatorName: assignee.name,
+          questionId: q.id,
+          subject: q.subject,
+          title: q.title,
+          durationMin: q.durationMin,
+          steps: q.steps,
+          dueDate: due || null,
+          status: 'assigned',
+          createdAt: now,
+          updatedAt: now,
+          progress: null,
+          submit: null,
+          review: null
+        };
+        newTasks.push(t);
+        pushNotification(
+          assignee.id,
+          `【任务发放】你收到实操考评任务：${q.subject}｜${q.title}。请在“考评员工作台”创建/填写并提交。` + (due ? ` 截止：${due}` : ''),
+          'task'
+        );
+      });
+
+      jsonSet(TASK_KEY, [...newTasks, ...(Array.isArray(tasks) ? tasks : [])]);
+      // 发放后：将被分配考评员的状态置为“认定任务中”
+      const nextList = list.map((x) =>
+        selectedAssignees.has(x.id) ? { ...x, status: '认定任务中' } : x
+      );
+      save(nextList);
+      closeDispatch();
+      toast(`已发放 ${newTasks.length} 个任务`);
+    });
+
+    document.getElementById('btnOpenPortal').addEventListener('click', () => {
+      window.open('考评员工作台.html', '_blank');
+    });
+
+    render();
+  </script>
+</body>
+</html>

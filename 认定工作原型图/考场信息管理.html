@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>考场信息 - 物料库管理</title>
+    <link rel="stylesheet" href="common.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f0f2f5; }
+        .container { display: flex; height: 100vh; }
+        .sidebar { width: 220px; background: #fff; border-right: 1px solid #e8e8e8; padding: 16px 0; flex-shrink: 0; overflow-y: auto; }
+        .sidebar-logo { padding: 0 16px 16px; border-bottom: 1px solid #f0f0f0; margin-bottom: 8px; }
+        .sidebar-logo h2 { font-size: 16px; font-weight: 600; }
+        .sidebar-item { padding: 12px 16px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; }
+        .sidebar-item-content { display: flex; align-items: center; gap: 10px; }
+        .sidebar-icon { width: 20px; text-align: center; }
+        .sidebar-arrow { font-size: 12px; color: #bfbfbf; }
+        .sidebar-item.expanded .sidebar-arrow { transform: rotate(90deg); }
+        .sidebar-sublist { max-height: 0; overflow: hidden; transition: max-height 0.3s; }
+        .sidebar-sublist.expanded { max-height: 1200px; }
+        .sidebar-subitem { padding: 10px 16px 10px 46px; cursor: pointer; font-size: 14px; color: #595959; display: flex; gap: 8px; }
+        .sidebar-subitem:hover { background: #f5f5f5; color: #1890ff; }
+        .sidebar-subitem.active { background: rgba(24,144,255,0.2); color: #1890ff; border-right: 3px solid #1890ff; }
+        .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .header { height: 64px; background: #fff; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .content { flex: 1; padding: 24px; overflow-y: auto; }
+        .breadcrumb { font-size: 13px; color: #999; margin-bottom: 16px; }
+        .breadcrumb a { color: #1890ff; text-decoration: none; }
+        .toolbar { display:flex; gap: 10px; flex-wrap: wrap; align-items:center; justify-content: space-between; margin-bottom: 12px; }
+        .toolbar-left { display:flex; gap: 10px; flex-wrap: wrap; align-items:center; }
+        .btn { border: 1px solid rgba(0,0,0,.12); background: #fff; padding: 8px 12px; border-radius: 10px; cursor: pointer; font-size: 13px; }
+        .btn.primary { background: #3b82f6; color: #fff; border-color: rgba(29,78,216,.25); }
+        .btn.ghost { background: rgba(2,6,23,.04); }
+        .btn:disabled { opacity: .55; cursor: not-allowed; }
+        .input { border: 1px solid rgba(0,0,0,.12); border-radius: 10px; padding: 8px 10px; font-size: 13px; min-width: 260px; }
+        table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid #f0f0f0; font-size: 14px; }
+        th { background: #fafafa; color: #666; font-weight: 500; }
+        .op { display:flex; gap: 10px; align-items:center; }
+        .link { border:none; background:transparent; color:#3b82f6; cursor:pointer; padding:0; font-size: 13px; }
+        .link.danger { color:#ef4444; }
+        .tag { font-size: 12px; padding: 2px 8px; border-radius: 999px; border: 1px solid rgba(0,0,0,.10); background: rgba(2,6,23,.03); color: #64748b; display:inline-flex; }
+        .tag.ok { background: rgba(16,185,129,.12); border-color: rgba(16,185,129,.22); color: #10b981; }
+        .tag.warn { background: rgba(245,158,11,.14); border-color: rgba(245,158,11,.24); color: #f59e0b; }
+
+        /* Modal */
+        .mask { position: fixed; inset: 0; background: rgba(0,0,0,.38); display: none; align-items: center; justify-content: center; padding: 20px; }
+        .mask.show { display: flex; }
+        .modal { width: min(860px, 100%); background: #fff; border-radius: 14px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,.25); }
+        .mhead { padding: 14px 16px; display:flex; align-items:center; justify-content: space-between; border-bottom: 1px solid rgba(0,0,0,.06); }
+        .mhead h3 { font-size: 15px; }
+        .mbody { padding: 16px; max-height: 72vh; overflow:auto; }
+        .mfoot { padding: 14px 16px; display:flex; justify-content: flex-end; gap: 10px; border-top: 1px solid rgba(0,0,0,.06); }
+        .grid2 { display:grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .field { display:flex; flex-direction: column; gap: 6px; }
+        .field label { font-size: 12px; color: #64748b; }
+        .select, .text { border: 1px solid rgba(0,0,0,.12); border-radius: 10px; padding: 8px 10px; font-size: 13px; }
+        .hint { font-size: 12px; color: #64748b; line-height: 1.6; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="sidebar">
+        <div class="sidebar-logo"><h2>认定工作流程</h2><p>系统原型</p></div>
+        <div class="sidebar-item" onclick="window.location.href='数据面板.html'">
+            <div class="sidebar-item-content"><span class="sidebar-icon">📊</span><span>数据面板</span></div>
+        </div>
+        <div class="sidebar-item expanded" id="projectMenu">
+            <div class="sidebar-item-content"><span class="sidebar-icon">📁</span><span>任务管理</span></div>
+            <span class="sidebar-arrow">▶</span>
+        </div>
+        <div class="sidebar-sublist expanded" id="projectSubmenu">
+            <div class="sidebar-subitem" onclick="window.location.href='项目管理首页.html'"><span>📋</span> 任务准备</div>
+            <div class="sidebar-subitem" onclick="window.location.href='我要下单.html'"><span>🛒</span> 我要下单</div>
+            <div class="sidebar-subitem" id="archiveMenu" onclick="toggleArchiveSubmenu(event)">
+                <span>📦</span> 任务档案<span class="sidebar-arrow" style="margin-left:auto">▶</span>
+            </div>
+            <div class="sidebar-sublist" id="archiveSubmenu">
+                <div class="sidebar-subitem" onclick="window.location.href='考试材料.html'" style="padding-left:56px"><span>📝</span> 考试材料</div>
+                <div class="sidebar-subitem" onclick="window.location.href='考场资料.html'" style="padding-left:56px"><span>🏫</span> 考场资料</div>
+                <div class="sidebar-subitem" onclick="window.location.href='考生资料.html'" style="padding-left:56px"><span>👤</span> 考生资料</div>
+            </div>
+        </div>
+        <div class="sidebar-item" id="processMenu">
+            <div class="sidebar-item-content"><span class="sidebar-icon">📋</span><span>认定流程</span></div>
+            <span class="sidebar-arrow">▶</span>
+        </div>
+        <div class="sidebar-sublist" id="processSubmenu"></div>
+    </div>
+    <div class="main-content">
+        <div class="header"><h1>考场信息</h1><span style="color:#666;font-size:14px;">物料库管理</span></div>
+        <div class="content">
+            <div class="breadcrumb"><a href="数据面板.html">首页</a><span>/</span><span>物料库管理</span><span>/</span><span>考场信息</span></div>
+            <div class="toolbar">
+                <div class="toolbar-left">
+                    <button class="btn primary" id="btnAdd">➕ 新增考场</button>
+                    <button class="btn ghost" id="btnReset">♻️ 重置示例数据</button>
+                </div>
+                <div class="toolbar-left">
+                    <input class="input" id="kw" placeholder="搜索：考点名称/地址/备案号" />
+                </div>
+            </div>
+            <p style="color:#666;font-size:14px;margin-bottom:12px;">备案考点、容纳人数与设备概况，与「认定筹备 · 考场配置」形成主数据与任务侧引用的关系（原型：本地存储持久化）。</p>
+            <table>
+                <thead><tr><th>考点名称</th><th>地址</th><th>考位</th><th>备案号</th><th>状态</th><th style="width:140px;">操作</th></tr></thead>
+                <tbody id="tbody"></tbody>
+            </table>
+            <div class="hint" id="emptyHint" style="display:none; padding: 12px 6px;">暂无数据。</div>
+        </div>
+    </div>
+</div>
+
+<div class="mask" id="mask" role="dialog" aria-modal="true">
+    <div class="modal">
+        <div class="mhead">
+            <h3 id="mTitle">新增考场</h3>
+            <button class="btn" id="mClose">✕</button>
+        </div>
+        <div class="mbody">
+            <div class="grid2">
+                <div class="field"><label>考点名称</label><input class="text" id="fName" placeholder="如：广西技师学院考点" /></div>
+                <div class="field"><label>地址</label><input class="text" id="fAddr" placeholder="如：南宁市西乡塘区" /></div>
+                <div class="field"><label>考位/容量</label><input class="text" id="fSeats" placeholder="如：120" /></div>
+                <div class="field"><label>备案号</label><input class="text" id="fCode" placeholder="如：GX-KD-001" /></div>
+                <div class="field">
+                    <label>状态</label>
+                    <select class="select" id="fStatus">
+                        <option value="在用">在用</option>
+                        <option value="维护中">维护中</option>
+                        <option value="停用">停用</option>
+                    </select>
+                </div>
+                <div class="field"><label>备注（可选）</label><input class="text" id="fNote" placeholder="如：可用于理论/实操" /></div>
+            </div>
+            <div class="hint" style="margin-top:10px;">提示：此处为物料库主数据，供“考场配置”调用。</div>
+        </div>
+        <div class="mfoot">
+            <button class="btn" id="mCancel">取消</button>
+            <button class="btn primary" id="mSave">保存</button>
+        </div>
+    </div>
+</div>
+<script>
+function toggleArchiveSubmenu(e) {
+    e.stopPropagation();
+    const m = document.getElementById('archiveMenu');
+    const s = document.getElementById('archiveSubmenu');
+    const ar = m && m.querySelector('.sidebar-arrow');
+    if (!m || !s) return;
+    m.classList.toggle('expanded');
+    s.classList.toggle('expanded');
+    if (ar) ar.style.transform = m.classList.contains('expanded') ? 'rotate(90deg)' : 'rotate(0deg)';
+}
+</script>
+<script>
+    const KEY = 'lib_venues_v1';
+    const seed = [
+        { id:'v_1', name:'广西技师学院考点', addr:'南宁市西乡塘区', seats:120, code:'GX-KD-001', status:'在用', note:'' },
+        { id:'v_2', name:'柳州职业技术学院考点', addr:'柳州市鱼峰区', seats:80, code:'GX-KD-014', status:'在用', note:'' },
+        { id:'v_3', name:'桂林市公共实训基地', addr:'桂林市临桂区', seats:60, code:'GX-KD-022', status:'维护中', note:'' }
+    ];
+    function jsonGet(k, fb){ try { const r = localStorage.getItem(k); return r ? JSON.parse(r) : fb; } catch { return fb; } }
+    function jsonSet(k, v){ localStorage.setItem(k, JSON.stringify(v)); }
+    function uid(){ return 'v_' + Math.random().toString(16).slice(2) + Date.now().toString(16); }
+    function ensure(){ const v = jsonGet(KEY, null); if (Array.isArray(v) && v.length) return v; jsonSet(KEY, seed); return seed; }
+    function statusCls(s){ return s==='在用'?'ok':(s==='维护中'?'warn':''); }
+    function esc(s){ return String(s ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#039;"); }
+    function load(){ return ensure(); }
+    function save(list){ jsonSet(KEY, list); }
+    function render(){
+        const list = load();
+        const kw = (document.getElementById('kw').value||'').trim().toLowerCase();
+        const rows = kw ? list.filter(x => [x.name,x.addr,x.code].some(v => String(v||'').toLowerCase().includes(kw))) : list;
+        const tbody = document.getElementById('tbody');
+        tbody.innerHTML = '';
+        document.getElementById('emptyHint').style.display = rows.length ? 'none' : 'block';
+        rows.forEach(x => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${esc(x.name)}</td>
+                <td>${esc(x.addr)}</td>
+                <td>${esc(x.seats)}</td>
+                <td><span style="font-family:var(--mono); font-size:12px;">${esc(x.code||'')}</span></td>
+                <td><span class="tag ${statusCls(x.status)}">${esc(x.status)}</span></td>
+                <td>
+                    <div class="op">
+                        <button class="link" data-act="edit">编辑</button>
+                        <button class="link danger" data-act="del">删除</button>
+                    </div>
+                </td>`;
+            tr.querySelector('[data-act="edit"]').addEventListener('click', () => openModal(x.id));
+            tr.querySelector('[data-act="del"]').addEventListener('click', () => delOne(x.id));
+            tbody.appendChild(tr);
+        });
+    }
+    function delOne(id){
+        const next = load().filter(x => x.id !== id);
+        save(next);
+        render();
+        toast('已删除');
+    }
+    function toast(msg){
+        const t = document.createElement('div');
+        t.textContent = msg;
+        t.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.82);color:#fff;padding:10px 14px;border-radius:10px;z-index:9999;font-size:13px;';
+        document.body.appendChild(t);
+        setTimeout(()=>t.remove(), 1600);
+    }
+
+    const mask = document.getElementById('mask');
+    let editingId = null;
+    function openModal(id){
+        const list = load();
+        const cur = id ? list.find(x => x.id === id) : null;
+        editingId = id || null;
+        document.getElementById('mTitle').textContent = id ? '编辑考场' : '新增考场';
+        document.getElementById('fName').value = cur?.name || '';
+        document.getElementById('fAddr').value = cur?.addr || '';
+        document.getElementById('fSeats').value = cur?.seats ?? '';
+        document.getElementById('fCode').value = cur?.code || '';
+        document.getElementById('fStatus').value = cur?.status || '在用';
+        document.getElementById('fNote').value = cur?.note || '';
+        mask.classList.add('show');
+    }
+    function closeModal(){ mask.classList.remove('show'); editingId = null; }
+    document.getElementById('btnAdd').addEventListener('click', ()=>openModal(null));
+    document.getElementById('mClose').addEventListener('click', closeModal);
+    document.getElementById('mCancel').addEventListener('click', closeModal);
+    mask.addEventListener('click', (e)=>{ if (e.target===mask) closeModal(); });
+    document.getElementById('mSave').addEventListener('click', ()=>{
+        const name = document.getElementById('fName').value.trim();
+        const addr = document.getElementById('fAddr').value.trim();
+        const seatsRaw = document.getElementById('fSeats').value.trim();
+        const code = document.getElementById('fCode').value.trim();
+        const status = document.getElementById('fStatus').value;
+        const note = document.getElementById('fNote').value.trim();
+        const seats = seatsRaw ? Number(seatsRaw) : '';
+        if (!name || !addr) { toast('请填写考点名称与地址'); return; }
+        const list = load();
+        if (editingId) {
+            const next = list.map(x => x.id===editingId ? { ...x, name, addr, seats, code, status, note } : x);
+            save(next);
+            toast('已保存');
+        } else {
+            const next = [{ id: uid(), name, addr, seats, code, status, note }, ...list];
+            save(next);
+            toast('已新增');
+        }
+        closeModal();
+        render();
+    });
+    document.getElementById('kw').addEventListener('input', render);
+    document.getElementById('btnReset').addEventListener('click', ()=>{ jsonSet(KEY, seed); toast('已重置'); render(); });
+    render();
+</script>
+<script src="common.js"></script>
+</body>
+</html>

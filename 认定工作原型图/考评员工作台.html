@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>考评员工作台（权限访问） - 认定工作流程</title>
+  <link rel="stylesheet" href="common.css" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f0f2f5; }
+    .wrap { max-width: 1180px; margin: 0 auto; padding: 22px; }
+    .top { display:flex; align-items:center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+    .title h1 { font-size: 18px; }
+    .title p { margin-top: 6px; font-size: 12px; color: #64748b; line-height: 1.5; }
+    .card { background: #fff; border-radius: 14px; border: 1px solid rgba(0,0,0,.06); box-shadow: 0 10px 30px rgba(2,6,23,.06); padding: 16px; margin-bottom: 14px; }
+    .row { display:flex; flex-wrap: wrap; gap: 10px; align-items:center; justify-content: space-between; }
+    .row-left { display:flex; flex-wrap: wrap; gap: 10px; align-items:center; }
+    .btn { border: 1px solid rgba(0,0,0,.10); background: #fff; padding: 8px 12px; border-radius: 10px; cursor: pointer; font-size: 13px; }
+    .btn.primary { background: #3b82f6; color:#fff; border-color: rgba(29,78,216,.25); }
+    .btn.ghost { background: rgba(2,6,23,.04); }
+    .btn:disabled { opacity:.55; cursor:not-allowed; }
+    .select, .input { border: 1px solid rgba(0,0,0,.12); border-radius: 10px; padding: 8px 10px; font-size: 13px; }
+    .input { min-width: 260px; }
+    .pill { display:inline-flex; gap: 6px; align-items:center; padding: 4px 10px; border-radius: 999px; border: 1px solid rgba(0,0,0,.10); background: rgba(2,6,23,.03); color: #64748b; font-size: 12px; }
+    .pill.leader { background: rgba(59,130,246,.14); border-color: rgba(59,130,246,.24); color: #1e40af; }
+    .pill.ok { background: rgba(16,185,129,.12); border-color: rgba(16,185,129,.22); color: #10b981; }
+    .pill.warn { background: rgba(245,158,11,.14); border-color: rgba(245,158,11,.24); color: #f59e0b; }
+    .pill.bad { background: rgba(239,68,68,.12); border-color: rgba(239,68,68,.22); color: #ef4444; }
+
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 10px 12px; border-bottom: 1px solid rgba(0,0,0,.06); text-align: left; font-size: 13px; vertical-align: middle; }
+    th { background: rgba(2,6,23,.03); color: #64748b; font-weight: 600; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size: 12px; }
+    .op { display:flex; gap: 8px; align-items:center; }
+    .link { border:none; background:transparent; color:#3b82f6; cursor:pointer; padding:0; font-size: 13px; }
+    .link.danger { color:#ef4444; }
+    .hint { font-size: 12px; color:#64748b; line-height: 1.6; }
+
+    .grid { display:grid; grid-template-columns: 1.2fr .8fr; gap: 14px; }
+    @media (max-width: 920px) { .grid { grid-template-columns: 1fr; } }
+
+    /* Modal */
+    .mask { position: fixed; inset: 0; background: rgba(0,0,0,.38); display: none; align-items: center; justify-content: center; padding: 20px; }
+    .mask.show { display: flex; }
+    .modal { width: min(980px, 100%); background: #fff; border-radius: 14px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,.25); }
+    .mhead { padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(0,0,0,.06); }
+    .mhead h3 { font-size: 15px; }
+    .mbody { padding: 16px; max-height: 72vh; overflow: auto; }
+    .mfoot { padding: 14px 16px; display:flex; justify-content: flex-end; gap: 10px; border-top: 1px solid rgba(0,0,0,.06); }
+    .steps { display:flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+    .step { border: 1px solid rgba(0,0,0,.08); border-radius: 12px; padding: 12px; background: rgba(2,6,23,.02); }
+    .step-top { display:flex; align-items:center; justify-content: space-between; gap: 10px; }
+    .step h4 { font-size: 13px; }
+    .step ul { margin-top: 8px; padding-left: 18px; color:#64748b; font-size: 12px; line-height: 1.6; }
+    .score { display:flex; gap: 8px; align-items:center; }
+    .score input { width: 90px; }
+    textarea { width: 100%; border: 1px solid rgba(0,0,0,.12); border-radius: 12px; padding: 10px 12px; font-size: 13px; min-height: 92px; resize: vertical; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div class="title">
+        <h1>🔐 考评员工作台（权限访问）</h1>
+        <p>本页面用于模拟“考评员权限访问”：仅能看到分配给自己的实操考评任务；组长额外拥有“复核”权限。</p>
+      </div>
+      <div class="row-left">
+        <a class="btn ghost" href="考评员配置.html">← 返回考评员配置</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="row">
+        <div class="row-left">
+          <span class="pill">项目：<span class="mono" id="projCode">RD-2026-001</span></span>
+          <span class="pill">考评组：<span id="groupName">-</span></span>
+          <span class="pill" id="mePill" style="display:none;"></span>
+        </div>
+        <div class="row-left">
+          <select class="select" id="loginSelect"></select>
+          <button class="btn primary" id="btnLogin">进入</button>
+          <button class="btn" id="btnLogout">退出</button>
+        </div>
+      </div>
+      <p class="hint" style="margin-top:10px;">
+        说明：这里用“选择身份”模拟登录。身份来自 <code class="mono">考评员配置</code> 里已配置的成员。组长身份会自动解锁“复核”面板。
+      </p>
+    </div>
+
+    <div class="grid">
+      <div>
+        <div class="card">
+          <div class="row">
+            <div class="row-left">
+              <h3 style="font-size:15px;">🧩 我的实操考评任务</h3>
+              <span class="pill ok" id="taskCountPill">0</span>
+            </div>
+            <div class="row-left">
+              <select class="select" id="statusFilter">
+                <option value="all">全部状态</option>
+                <option value="assigned">已发放</option>
+                <option value="in_progress">填写中</option>
+                <option value="submitted">已提交</option>
+                <option value="reviewed">已复核</option>
+                <option value="rework">需整改</option>
+              </select>
+              <input class="input" id="kw" placeholder="搜索科目/题目" />
+            </div>
+          </div>
+          <div style="margin-top:10px;">
+            <table>
+              <thead>
+                <tr>
+                  <th>科目/题目</th>
+                  <th>状态</th>
+                  <th>截止</th>
+                  <th>更新时间</th>
+                  <th style="width:140px;">操作</th>
+                </tr>
+              </thead>
+              <tbody id="taskTbody"></tbody>
+            </table>
+            <div class="hint" id="taskEmpty" style="display:none; padding: 12px 6px;">暂无任务。请在“考评员配置”里发放任务。</div>
+          </div>
+        </div>
+
+        <div class="card" id="leaderCard" style="display:none;">
+          <div class="row">
+            <div class="row-left">
+              <h3 style="font-size:15px;">✅ 组长复核</h3>
+              <span class="pill leader">仅组长可见</span>
+            </div>
+            <div class="row-left">
+              <button class="btn" id="btnRefreshReview">刷新</button>
+            </div>
+          </div>
+          <p class="hint" style="margin-top:8px;">复核范围：同考评组内成员提交的实操考评任务。</p>
+          <div style="margin-top:10px;">
+            <table>
+              <thead>
+                <tr>
+                  <th>考评员</th>
+                  <th>题目</th>
+                  <th>提交时间</th>
+                  <th style="width:140px;">操作</th>
+                </tr>
+              </thead>
+              <tbody id="reviewTbody"></tbody>
+            </table>
+            <div class="hint" id="reviewEmpty" style="display:none; padding: 12px 6px;">暂无待复核任务。</div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="card">
+          <div class="row">
+            <div class="row-left">
+              <h3 style="font-size:15px;">📨 我的消息</h3>
+              <span class="pill" id="notiCount">0</span>
+            </div>
+            <div class="row-left">
+              <button class="btn" id="btnClearNoti">清空</button>
+            </div>
+          </div>
+          <div id="notiList" style="margin-top:10px; display:flex; flex-direction:column; gap:10px;"></div>
+          <div class="hint" id="notiEmpty" style="display:none; padding: 12px 6px;">暂无消息。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Task Modal (evaluator fill / view) -->
+  <div class="mask" id="taskMask" role="dialog" aria-modal="true">
+    <div class="modal">
+      <div class="mhead">
+        <h3 id="taskTitle">实操考评任务</h3>
+        <button class="btn" id="taskClose">✕</button>
+      </div>
+      <div class="mbody">
+        <div class="hint" id="taskMeta">-</div>
+        <div class="steps" id="stepsWrap"></div>
+        <div style="margin-top:12px;">
+          <label class="hint">考评说明/备注</label>
+          <textarea id="taskNote" placeholder="填写考评过程中的关键观察点、异常、建议等"></textarea>
+        </div>
+        <div class="hint" id="reviewHint" style="margin-top:10px; display:none;"></div>
+      </div>
+      <div class="mfoot">
+        <button class="btn" id="btnSaveDraft">保存进度</button>
+        <button class="btn primary" id="btnSubmitTask">提交给组长复核</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Review Modal (leader) -->
+  <div class="mask" id="reviewMask" role="dialog" aria-modal="true">
+    <div class="modal">
+      <div class="mhead">
+        <h3 id="reviewTitle">组长复核</h3>
+        <button class="btn" id="reviewClose">✕</button>
+      </div>
+      <div class="mbody">
+        <div class="hint" id="reviewMeta">-</div>
+        <div id="reviewBody"></div>
+        <div style="margin-top:12px;">
+          <label class="hint">复核意见</label>
+          <textarea id="reviewNote" placeholder="填写复核结论、整改建议等"></textarea>
+        </div>
+      </div>
+      <div class="mfoot">
+        <button class="btn danger" id="btnNeedRework">打回整改</button>
+        <button class="btn primary" id="btnApprove">复核通过</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const EVAL_KEY = 'prep_evaluator_config_v1'; // legacy
+    const EVAL_MAP_KEY = 'prep_evaluator_config_by_project_v1';
+    const GROUP_KEY = 'prep_evaluator_group_v1'; // legacy
+    const GROUP_MAP_KEY = 'prep_evaluator_group_by_project_v1';
+    const NOTI_KEY = 'evaluator_notifications_v1';
+    const TASK_KEY = 'practical_tasks_v1';
+    const SESSION_KEY = 'evaluator_session_v1';
+    function getProjectCode() {
+      const u = new URLSearchParams(window.location.search);
+      return u.get('task') || localStorage.getItem('currentProjectCode') || 'RD-2026-001';
+    }
+
+    function loadEvalBucket(projectCode) {
+      const map = jsonGet(EVAL_MAP_KEY, {});
+      const bucket = map && map[projectCode];
+      if (Array.isArray(bucket)) return bucket;
+      const legacy = jsonGet(EVAL_KEY, []);
+      return Array.isArray(legacy) ? legacy : [];
+    }
+
+    function loadGroupBucket(projectCode) {
+      const map = jsonGet(GROUP_MAP_KEY, {});
+      const bucket = map && map[projectCode];
+      if (bucket && typeof bucket === 'object') return bucket;
+      const legacy = jsonGet(GROUP_KEY, {});
+      return legacy && typeof legacy === 'object' ? legacy : {};
+    }
+
+    function jsonGet(key, fallback) {
+      try {
+        const raw = localStorage.getItem(key);
+        if (!raw) return fallback;
+        return JSON.parse(raw);
+      } catch {
+        return fallback;
+      }
+    }
+    function jsonSet(key, value) { localStorage.setItem(key, JSON.stringify(value)); }
+
+    function escapeHtml(s) {
+      return String(s ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    function statusPill(status) {
+      if (status === 'assigned') return '<span class="pill warn">已发放</span>';
+      if (status === 'in_progress') return '<span class="pill">填写中</span>';
+      if (status === 'submitted') return '<span class="pill ok">已提交</span>';
+      if (status === 'reviewed') return '<span class="pill ok">已复核</span>';
+      if (status === 'rework') return '<span class="pill bad">需整改</span>';
+      return '<span class="pill">-</span>';
+    }
+
+    function pushNoti(eid, msg, kind) {
+      const map = jsonGet(NOTI_KEY, {});
+      const arr = Array.isArray(map[eid]) ? map[eid] : [];
+      arr.unshift({ id: 'n_' + Math.random().toString(16).slice(2), kind: kind || 'info', message: msg, at: new Date().toISOString() });
+      map[eid] = arr;
+      jsonSet(NOTI_KEY, map);
+    }
+
+    function nowIso() { return new Date().toISOString(); }
+
+    const loginSelect = document.getElementById('loginSelect');
+    const btnLogin = document.getElementById('btnLogin');
+    const btnLogout = document.getElementById('btnLogout');
+    const mePill = document.getElementById('mePill');
+    const leaderCard = document.getElementById('leaderCard');
+    const groupNameEl = document.getElementById('groupName');
+
+    function loadEvaluators() { return loadEvalBucket(getProjectCode()); }
+    function loadGroup() { return loadGroupBucket(getProjectCode()); }
+    function loadSession() { return jsonGet(SESSION_KEY, null); }
+    function saveSession(s) { jsonSet(SESSION_KEY, s); }
+    function clearSession() { localStorage.removeItem(SESSION_KEY); }
+
+    function hydrateLoginOptions() {
+      const list = loadEvaluators();
+      loginSelect.innerHTML = '';
+      const opt0 = document.createElement('option');
+      opt0.value = '';
+      opt0.textContent = '请选择考评员身份…';
+      loginSelect.appendChild(opt0);
+      list.forEach((x) => {
+        const opt = document.createElement('option');
+        opt.value = x.id;
+        opt.textContent = `${x.name}${x.isLeader ? '（组长）' : ''}｜${x.skill}`;
+        loginSelect.appendChild(opt);
+      });
+    }
+
+    function renderHeader() {
+      const g = loadGroup();
+      document.getElementById('projCode').textContent = g.projectCode || getProjectCode() || 'RD-2026-001';
+      groupNameEl.textContent = g.groupName || '-';
+      const s = loadSession();
+      if (!s) {
+        mePill.style.display = 'none';
+        leaderCard.style.display = 'none';
+        return;
+      }
+      mePill.style.display = 'inline-flex';
+      mePill.className = 'pill ' + (s.isLeader ? 'leader' : '');
+      mePill.textContent = `当前身份：${s.name}${s.isLeader ? '（组长）' : ''}`;
+      leaderCard.style.display = s.isLeader ? 'block' : 'none';
+    }
+
+    // Notifications
+    function renderNoti() {
+      const s = loadSession();
+      const box = document.getElementById('notiList');
+      const empty = document.getElementById('notiEmpty');
+      if (!s) {
+        box.innerHTML = '';
+        empty.style.display = 'block';
+        document.getElementById('notiCount').textContent = '0';
+        return;
+      }
+      const map = jsonGet(NOTI_KEY, {});
+      const arr = Array.isArray(map[s.id]) ? map[s.id] : [];
+      document.getElementById('notiCount').textContent = String(arr.length);
+      if (!arr.length) {
+        box.innerHTML = '';
+        empty.style.display = 'block';
+        return;
+      }
+      empty.style.display = 'none';
+      box.innerHTML = '';
+      arr.slice(0, 30).forEach((n) => {
+        const el = document.createElement('div');
+        el.className = 'step';
+        el.innerHTML = `<div class="step-top">
+          <div class="hint">${escapeHtml(new Date(n.at).toLocaleString())}</div>
+          <span class="pill">${escapeHtml(n.kind || 'info')}</span>
+        </div>
+        <div style="margin-top:8px; font-size:13px; line-height:1.6;">${escapeHtml(n.message)}</div>`;
+        box.appendChild(el);
+      });
+    }
+    document.getElementById('btnClearNoti').addEventListener('click', () => {
+      const s = loadSession();
+      if (!s) return;
+      const map = jsonGet(NOTI_KEY, {});
+      map[s.id] = [];
+      jsonSet(NOTI_KEY, map);
+      renderNoti();
+    });
+
+    // Tasks
+    function loadTasks() {
+      const v = jsonGet(TASK_KEY, []);
+      return Array.isArray(v) ? v : [];
+    }
+    function saveTasks(list) { jsonSet(TASK_KEY, list); }
+
+    function renderTasks() {
+      const s = loadSession();
+      const tbody = document.getElementById('taskTbody');
+      const empty = document.getElementById('taskEmpty');
+      const pill = document.getElementById('taskCountPill');
+      tbody.innerHTML = '';
+
+      if (!s) {
+        empty.style.display = 'block';
+        pill.textContent = '0';
+        return;
+      }
+
+      const kw = (document.getElementById('kw').value || '').trim().toLowerCase();
+      const st = document.getElementById('statusFilter').value;
+      const tasks = loadTasks().filter((t) => t.evaluatorId === s.id && String(t.projectCode || '') === String(getProjectCode() || ''));
+      const filtered = tasks.filter((t) => {
+        const matchKw = !kw || [t.subject, t.title].some((x) => String(x || '').toLowerCase().includes(kw));
+        const matchSt = st === 'all' || t.status === st;
+        return matchKw && matchSt;
+      });
+
+      pill.textContent = String(tasks.length);
+      empty.style.display = tasks.length ? 'none' : 'block';
+
+      filtered.forEach((t) => {
+        const tr = document.createElement('tr');
+        const op =
+          t.status === 'assigned'
+            ? '开始填写'
+            : t.status === 'in_progress'
+              ? '继续填写'
+              : t.status === 'rework'
+                ? '整改并提交'
+                : '查看';
+        tr.innerHTML = `
+          <td>
+            <div style="font-weight:600;">${escapeHtml(t.subject)}｜${escapeHtml(t.title)}</div>
+            <div class="hint">题号：<span class="mono">${escapeHtml(t.questionId)}</span>｜时长 ${escapeHtml(t.durationMin)}min</div>
+          </td>
+          <td>${statusPill(t.status)}</td>
+          <td>${t.dueDate ? escapeHtml(t.dueDate) : '<span class="hint">-</span>'}</td>
+          <td class="hint">${escapeHtml(new Date(t.updatedAt || t.createdAt).toLocaleString())}</td>
+          <td>
+            <div class="op">
+              <button class="link" data-act="open">${op}</button>
+            </div>
+          </td>`;
+        tr.querySelector('[data-act="open"]').addEventListener('click', () => openTask(t.id));
+        tbody.appendChild(tr);
+      });
+    }
+
+    document.getElementById('statusFilter').addEventListener('change', renderTasks);
+    document.getElementById('kw').addEventListener('input', renderTasks);
+
+    // Task modal fill flow
+    const taskMask = document.getElementById('taskMask');
+    const stepsWrap = document.getElementById('stepsWrap');
+    const taskNote = document.getElementById('taskNote');
+    const btnSaveDraft = document.getElementById('btnSaveDraft');
+    const btnSubmitTask = document.getElementById('btnSubmitTask');
+    const reviewHint = document.getElementById('reviewHint');
+    let activeTaskId = null;
+
+    function openTask(id) {
+      const s = loadSession();
+      if (!s) return;
+      const tasks = loadTasks();
+      const t = tasks.find((x) => x.id === id);
+      if (!t || t.evaluatorId !== s.id) return;
+      activeTaskId = id;
+      document.getElementById('taskTitle').textContent = `实操考评任务｜${t.subject}`;
+      document.getElementById('taskMeta').textContent = `题目：${t.title}｜项目：${t.projectCode}｜考评组：${t.groupName}｜截止：${t.dueDate || '-'}｜状态：${t.status}`;
+      const progress = t.progress || { stepScores: {}, note: '' };
+      stepsWrap.innerHTML = '';
+      (t.steps || []).forEach((st, idx) => {
+        const key = String(idx);
+        const cur = progress.stepScores?.[key] ?? '';
+        const el = document.createElement('div');
+        el.className = 'step';
+        el.innerHTML = `
+          <div class="step-top">
+            <h4>${escapeHtml(st.name)} <span class="hint">（满分 ${escapeHtml(st.score)}）</span></h4>
+            <div class="score">
+              <span class="hint">得分</span>
+              <input class="input" data-step="${key}" value="${escapeHtml(cur)}" placeholder="0-${escapeHtml(st.score)}" />
+            </div>
+          </div>
+          <ul>${(st.points || []).map((p) => `<li>${escapeHtml(p)}</li>`).join('')}</ul>
+        `;
+        stepsWrap.appendChild(el);
+      });
+      taskNote.value = progress.note || '';
+
+      const readonly = (t.status === 'submitted' || t.status === 'reviewed');
+      stepsWrap.querySelectorAll('input').forEach((i) => (i.disabled = readonly));
+      taskNote.disabled = readonly;
+      btnSaveDraft.style.display = readonly ? 'none' : 'inline-flex';
+      btnSubmitTask.style.display = readonly ? 'none' : 'inline-flex';
+
+      reviewHint.style.display = 'none';
+      if (t.status === 'rework') {
+        reviewHint.style.display = 'block';
+        reviewHint.innerHTML = `<span class="pill bad">需整改</span> 组长意见：${escapeHtml(t.review?.note || '请根据意见整改后重新提交')}`;
+      }
+      if (t.status === 'reviewed') {
+        reviewHint.style.display = 'block';
+        reviewHint.innerHTML = `<span class="pill ok">已复核</span> 组长意见：${escapeHtml(t.review?.note || '通过')}`;
+      }
+
+      taskMask.classList.add('show');
+      if (t.status === 'assigned') {
+        // auto move to in_progress on open
+        t.status = 'in_progress';
+        t.updatedAt = nowIso();
+        saveTasks(tasks.map((x) => (x.id === t.id ? t : x)));
+        pushNoti(s.id, `【任务开始】你已开始填写任务：${t.subject}｜${t.title}`, 'task');
+        renderTasks();
+      }
+    }
+    function closeTask() {
+      taskMask.classList.remove('show');
+      activeTaskId = null;
+    }
+    document.getElementById('taskClose').addEventListener('click', closeTask);
+    taskMask.addEventListener('click', (e) => { if (e.target === taskMask) closeTask(); });
+
+    function collectProgress(t) {
+      const stepScores = {};
+      stepsWrap.querySelectorAll('input[data-step]').forEach((inp) => {
+        const k = inp.getAttribute('data-step');
+        stepScores[k] = inp.value.trim();
+      });
+      return { stepScores, note: taskNote.value.trim() };
+    }
+
+    btnSaveDraft.addEventListener('click', () => {
+      const s = loadSession();
+      if (!s || !activeTaskId) return;
+      const tasks = loadTasks();
+      const t = tasks.find((x) => x.id === activeTaskId);
+      if (!t || t.evaluatorId !== s.id) return;
+      if (t.status !== 'in_progress' && t.status !== 'rework') return;
+      t.progress = collectProgress(t);
+      t.updatedAt = nowIso();
+      if (t.status === 'rework') t.status = 'in_progress';
+      saveTasks(tasks.map((x) => (x.id === t.id ? t : x)));
+      pushNoti(s.id, `【保存进度】已保存：${t.subject}｜${t.title}`, 'task');
+      renderTasks();
+      renderNoti();
+    });
+
+    btnSubmitTask.addEventListener('click', () => {
+      const s = loadSession();
+      if (!s || !activeTaskId) return;
+      const tasks = loadTasks();
+      const t = tasks.find((x) => x.id === activeTaskId);
+      if (!t || t.evaluatorId !== s.id) return;
+      if (t.status !== 'in_progress' && t.status !== 'rework') return;
+      t.progress = collectProgress(t);
+      t.status = 'submitted';
+      t.submit = { at: nowIso() };
+      t.updatedAt = nowIso();
+      saveTasks(tasks.map((x) => (x.id === t.id ? t : x)));
+      pushNoti(s.id, `【已提交】任务已提交组长复核：${t.subject}｜${t.title}`, 'task');
+      if (t.leaderId) pushNoti(t.leaderId, `【待复核】收到 ${t.evaluatorName} 提交的实操任务：${t.subject}｜${t.title}`, 'review');
+      closeTask();
+      renderTasks();
+      renderNoti();
+      renderReviewList();
+    });
+
+    // Leader review
+    const reviewMask = document.getElementById('reviewMask');
+    let activeReviewTaskId = null;
+    function renderReviewList() {
+      const s = loadSession();
+      const tbody = document.getElementById('reviewTbody');
+      const empty = document.getElementById('reviewEmpty');
+      tbody.innerHTML = '';
+      if (!s || !s.isLeader) {
+        empty.style.display = 'block';
+        return;
+      }
+      const group = loadGroup();
+      const tasks = loadTasks().filter((t) => t.projectCode === group.projectCode && t.groupName === group.groupName);
+      const pending = tasks.filter((t) => t.status === 'submitted');
+      empty.style.display = pending.length ? 'none' : 'block';
+      pending.forEach((t) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${escapeHtml(t.evaluatorName)}</td>
+          <td>${escapeHtml(t.subject)}｜${escapeHtml(t.title)}</td>
+          <td class="hint">${escapeHtml(new Date(t.submit?.at || t.updatedAt).toLocaleString())}</td>
+          <td><div class="op"><button class="link" data-act="review">复核</button></div></td>
+        `;
+        tr.querySelector('[data-act="review"]').addEventListener('click', () => openReview(t.id));
+        tbody.appendChild(tr);
+      });
+    }
+
+    document.getElementById('btnRefreshReview').addEventListener('click', renderReviewList);
+
+    function openReview(id) {
+      const s = loadSession();
+      if (!s || !s.isLeader) return;
+      const tasks = loadTasks();
+      const t = tasks.find((x) => x.id === id);
+      if (!t || t.status !== 'submitted') return;
+      activeReviewTaskId = id;
+      document.getElementById('reviewTitle').textContent = `组长复核｜${t.evaluatorName}`;
+      document.getElementById('reviewMeta').textContent = `题目：${t.subject}｜${t.title}｜提交：${new Date(t.submit?.at || t.updatedAt).toLocaleString()}｜任务：${t.projectCode}/${t.groupName}`;
+      const body = document.getElementById('reviewBody');
+      const prog = t.progress || { stepScores: {}, note: '' };
+      body.innerHTML = `
+        <div class="card" style="padding:12px; margin: 10px 0;">
+          <div class="hint">考评员填写结果（得分）</div>
+          <div class="steps">
+            ${(t.steps || []).map((st, idx) => {
+              const k = String(idx);
+              const v = prog.stepScores?.[k] ?? '';
+              return `<div class="step">
+                <div class="step-top">
+                  <h4>${escapeHtml(st.name)} <span class="hint">（满分 ${escapeHtml(st.score)}）</span></h4>
+                  <span class="pill">${escapeHtml(v || '-')}</span>
+                </div>
+              </div>`;
+            }).join('')}
+          </div>
+          <div style="margin-top:10px;">
+            <div class="hint">考评说明</div>
+            <div style="margin-top:6px; font-size:13px; line-height:1.6;">${escapeHtml(prog.note || '-')}</div>
+          </div>
+        </div>
+      `;
+      document.getElementById('reviewNote').value = '';
+      reviewMask.classList.add('show');
+    }
+    function closeReview() {
+      reviewMask.classList.remove('show');
+      activeReviewTaskId = null;
+    }
+    document.getElementById('reviewClose').addEventListener('click', closeReview);
+    reviewMask.addEventListener('click', (e) => { if (e.target === reviewMask) closeReview(); });
+
+    function applyReview(nextStatus) {
+      const s = loadSession();
+      if (!s || !s.isLeader || !activeReviewTaskId) return;
+      const tasks = loadTasks();
+      const t = tasks.find((x) => x.id === activeReviewTaskId);
+      if (!t || t.status !== 'submitted') return;
+      const note = document.getElementById('reviewNote').value.trim();
+      t.status = nextStatus;
+      t.review = { by: s.id, byName: s.name, at: nowIso(), note: note || (nextStatus === 'reviewed' ? '复核通过' : '请整改后重新提交') };
+      t.updatedAt = nowIso();
+      saveTasks(tasks.map((x) => (x.id === t.id ? t : x)));
+      pushNoti(s.id, `【复核完成】${t.evaluatorName}：${t.subject}｜${t.title}（${nextStatus === 'reviewed' ? '通过' : '整改'}）`, 'review');
+      pushNoti(t.evaluatorId, `【复核结果】${t.subject}｜${t.title}：${nextStatus === 'reviewed' ? '复核通过' : '需整改'}。意见：${t.review.note}`, 'review');
+      closeReview();
+      renderReviewList();
+      renderTasks();
+      renderNoti();
+    }
+    document.getElementById('btnApprove').addEventListener('click', () => applyReview('reviewed'));
+    document.getElementById('btnNeedRework').addEventListener('click', () => applyReview('rework'));
+
+    // Login flow
+    btnLogin.addEventListener('click', () => {
+      const id = loginSelect.value;
+      if (!id) return;
+      const list = loadEvaluators();
+      const me = list.find((x) => x.id === id);
+      if (!me) return;
+      saveSession({ id: me.id, name: me.name, isLeader: !!me.isLeader });
+      renderHeader();
+      renderNoti();
+      renderTasks();
+      renderReviewList();
+    });
+    btnLogout.addEventListener('click', () => {
+      clearSession();
+      renderHeader();
+      renderNoti();
+      renderTasks();
+      renderReviewList();
+    });
+
+    // Init
+    hydrateLoginOptions();
+    const group = loadGroup();
+    groupNameEl.textContent = group.groupName || '-';
+    renderHeader();
+    const s = loadSession();
+    if (s) {
+      // keep session
+      renderNoti();
+      renderTasks();
+      renderReviewList();
+    } else {
+      renderNoti();
+      renderTasks();
+      renderReviewList();
+    }
+  </script>
+</body>
+</html>

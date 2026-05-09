@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>项目策划任务书</title>
+    <link rel="stylesheet" href="common.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/antd@5.12.8/dist/reset.css">
+    <style>
+        :root {
+            --primary: #1890ff;
+            --primary-strong: #096dd9;
+            --primary-soft: #e6f7ff;
+            --success: #52c41a;
+            --success-soft: #f6ffed;
+            --warning: #fa8c16;
+            --warning-soft: #fff7e6;
+            --danger: #ff4d4f;
+            --danger-soft: #fff1f0;
+            --text: #1f2937;
+            --text-muted: #6b7280;
+            --border: #e5e7eb;
+            --bg: #f0f2f5;
+            --surface: #ffffff;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+        }
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+        .sidebar {
+            width: 220px;
+            background-color: #ffffff;
+            color: #1f2937;
+            border-right: 1px solid #e8e8e8;
+            box-shadow: 2px 0 8px rgba(0, 0, 0, 0.04);
+            padding: 16px 0;
+            flex-shrink: 0;
+            overflow-y: auto;
+        }
+        .sidebar-logo {
+            padding: 0 16px 16px;
+            border-bottom: 1px solid #f0f0f0;
+            margin-bottom: 8px;
+        }
+        .sidebar-logo h2 {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .sidebar-logo p {
+            font-size: 12px;
+            color: #8c8c8c;
+            margin-top: 4px;
+        }
+        .sidebar-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            user-select: none;
+        }
+        .sidebar-item:hover {
+            background-color: #f5f5f5;
+        }
+        .sidebar-item.active {
+            background-color: var(--primary);
+            color: #ffffff;
+        }
+        .sidebar-item.active .sidebar-arrow {
+            color: rgba(255, 255, 255, 0.9);
+        }
+        .sidebar-item-content {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .sidebar-icon {
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+        }
+        .sidebar-arrow {
+            font-size: 12px;
+            transition: transform 0.3s;
+            color: #bfbfbf;
+        }
+                .sidebar-subitem.expanded .sidebar-arrow { transform: rotate(90deg); }
+        .sidebar-item.expanded .sidebar-arrow {
+            transform: rotate(90deg);
+        }
+        .sidebar-sublist {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        .sidebar-sublist.expanded {
+            max-height: 1200px;
+        }
+        .sidebar-subitem {
+            padding: 10px 16px 10px 46px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            color: #595959;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .sidebar-subitem:hover {
+            background-color: #f5f5f5;
+            color: var(--primary);
+        }
+        .sidebar-subitem.active {
+            background-color: rgba(24, 144, 255, 0.2);
+            color: var(--primary);
+            border-right: 3px solid var(--primary);
+        }
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .header {
+            height: 64px;
+            background-color: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .header h1 {
+            font-size: 18px;
+            color: var(--text);
+        }
+        .header-user {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #666;
+            font-size: 14px;
+        }
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+        }
+        .breadcrumb a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+        .content {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+        }
+        /* 文档容器 */
+        .document-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+        /* 文档头部 */
+        .document-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-strong) 100%);
+            color: white;
+            padding: 32px;
+        }
+        .document-header h2 {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        .document-header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+        /* 元信息区域 */
+        .meta-section {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .meta-item {
+            padding: 20px 24px;
+            border-right: 1px solid var(--border);
+        }
+        .meta-item:last-child {
+            border-right: none;
+        }
+        .meta-item span {
+            display: block;
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+        .meta-item strong {
+            font-size: 15px;
+            color: var(--text);
+        }
+        /* 进度区域 */
+        .progress-section {
+            padding: 24px 32px;
+            background: #f8fafc;
+            border-bottom: 1px solid var(--border);
+        }
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .progress-header strong {
+            font-size: 15px;
+        }
+        .progress-bar {
+            height: 8px;
+            background: #e7edf7;
+            border-radius: 999px;
+            overflow: hidden;
+        }
+        .progress-value {
+            height: 100%;
+            border-radius: inherit;
+            background: linear-gradient(90deg, var(--primary), #60a5fa);
+            transition: width 0.5s ease;
+        }
+        /* 文档内容 */
+        .document-body {
+            padding: 32px;
+        }
+        .doc-section {
+            margin-bottom: 32px;
+        }
+        .doc-section:last-child {
+            margin-bottom: 0;
+        }
+        .section-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            font-size: 14px;
+            font-weight: 600;
+            margin-right: 12px;
+        }
+        .doc-section h3 {
+            font-size: 18px;
+            color: var(--text);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+        }
+        .doc-section p {
+            color: var(--text-muted);
+            line-height: 1.8;
+            font-size: 14px;
+            padding-left: 40px;
+        }
+        .doc-section ul {
+            list-style: none;
+            padding-left: 40px;
+        }
+        .doc-section li {
+            padding: 10px 0;
+            color: var(--text-muted);
+            font-size: 14px;
+            line-height: 1.6;
+            border-bottom: 1px dashed var(--border);
+        }
+        .doc-section li:last-child {
+            border-bottom: none;
+        }
+        .doc-section li strong {
+            color: var(--text);
+            display: inline-block;
+            min-width: 80px;
+        }
+        /* 节点目标列表 */
+        .milestone-list {
+            padding-left: 40px;
+        }
+        .milestone-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 16px;
+            background: #f8fafc;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            border: 1px solid var(--border);
+            transition: all 0.3s;
+        }
+        .milestone-item:hover {
+            border-color: var(--primary);
+            background: var(--primary-soft);
+        }
+        .milestone-item.completed {
+            background: var(--success-soft);
+            border-color: var(--success);
+        }
+        .milestone-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin-top: 2px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .milestone-content {
+            flex: 1;
+        }
+        .milestone-content strong {
+            display: block;
+            font-size: 14px;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+        .milestone-content span {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+        /* 工具栏 */
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 32px;
+            background: #f8fafc;
+            border-top: 1px solid var(--border);
+        }
+        .toolbar-left, .toolbar-right {
+            display: flex;
+            gap: 12px;
+        }
+        .button {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--primary);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+        .button:hover {
+            background: var(--primary-strong);
+        }
+        .button-secondary {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: white;
+            color: var(--text);
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 14px;
+            border: 1px solid var(--border);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        .button-secondary:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+        .button-ghost {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text-muted);
+            padding: 10px 20px;
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.3s;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+        }
+        .button-ghost:hover {
+            color: var(--primary);
+        }
+        /* Toast */
+        .toast-stack {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .toast {
+            min-width: 260px;
+            max-width: 360px;
+            padding: 14px 18px;
+            border-radius: 8px;
+            background: #1f2937;
+            color: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            font-size: 14px;
+            animation: slideIn 0.3s ease;
+        }
+        .toast.success { background: #166534; }
+        .toast.warning { background: #9a5408; }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .meta-section {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .meta-item:nth-child(2) {
+                border-right: none;
+            }
+            .meta-item:nth-child(1),
+            .meta-item:nth-child(2) {
+                border-bottom: 1px solid var(--border);
+            }
+            .document-header,
+            .document-body,
+            .progress-section,
+            .toolbar {
+                padding: 20px;
+            }
+            .doc-section p,
+            .doc-section ul,
+            .milestone-list {
+                padding-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 侧边栏 -->
+        <div class="sidebar">
+            <div class="sidebar-logo">
+                <h2>认定工作流程</h2>
+                <p>系统原型</p>
+            </div>
+            
+            <!-- 数据面板 -->
+            <div class="sidebar-item" onclick="window.location.href='数据面板.html'">
+                <div class="sidebar-item-content">
+                    <span class="sidebar-icon">📊</span>
+                    <span>数据面板</span>
+                </div>
+            </div>
+            
+            <!-- 项目管理 - 可展开 -->
+            <div class="sidebar-item expanded" id="projectMenu">
+                <div class="sidebar-item-content">
+                    <span class="sidebar-icon">📁</span>
+                    <span>任务管理</span>
+                </div>
+                <span class="sidebar-arrow">▶</span>
+            </div>
+            <div class="sidebar-sublist expanded" id="projectSubmenu">
+                <div class="sidebar-subitem active" onclick="window.location.href='项目管理首页.html'">
+                    <span>📋</span> 任务准备
+                </div>
+                <div class="sidebar-subitem" onclick="window.location.href='我要下单.html'">
+                    <span>🛒</span> 我要下单
+                </div>
+                <div class="sidebar-subitem" id="archiveMenu" onclick="toggleArchiveSubmenu(event)">
+                    <span>📦</span> 任务档案
+                    <span class="sidebar-arrow" style="margin-left: auto;">▶</span>
+                </div>
+                <div class="sidebar-sublist" id="archiveSubmenu">
+                    <div class="sidebar-subitem" onclick="window.location.href='考试材料.html'" style="padding-left: 56px;">
+                        <span>📝</span> 考试材料
+                    </div>
+                    <div class="sidebar-subitem" onclick="window.location.href='考场资料.html'" style="padding-left: 56px;">
+                        <span>🏫</span> 考场资料
+                    </div>
+                    <div class="sidebar-subitem" onclick="window.location.href='考生资料.html'" style="padding-left: 56px;">
+                        <span>👤</span> 考生资料
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 认定流程 - 可展开 -->
+            <div class="sidebar-item" id="processMenu">
+                <div class="sidebar-item-content">
+                    <span class="sidebar-icon">📋</span>
+                    <span>认定流程</span>
+                </div>
+                <span class="sidebar-arrow">▶</span>
+            </div>
+            <div class="sidebar-sublist" id="processSubmenu">
+                <div class="sidebar-subitem" onclick="window.location.href='任务选择.html'">
+                    <span>🏠</span> 任务选择
+                </div>
+                <div class="sidebar-subitem" onclick="window.location.href='认定流程首页.html'">
+                    <span>📌</span> 流程首页
+                </div>
+                <div class="sidebar-subitem" onclick="window.location.href='认定筹备.html'">
+                    <span>🔧</span> 认定筹备
+                </div>
+                <div class="sidebar-subitem" onclick="window.location.href='认定前.html'">
+                    <span>📅</span> 认定前
+                </div>
+                <div class="sidebar-subitem" onclick="window.location.href='理论笔试.html'">
+                    <span>📝</span> 理论笔试
+                </div>
+                <div class="sidebar-subitem" onclick="window.location.href='实操考试.html'">
+                    <span>🔨</span> 实操考试
+                </div>
+                <div class="sidebar-subitem" onclick="window.location.href='认定归档.html'">
+                    <span>📦</span> 认定归档
+                </div>
+            </div>
+        </div>
+        
+        <!-- 主内容区 -->
+        <div class="main-content">
+            <!-- 顶部栏 -->
+            <div class="header">
+                <div class="header-left">
+                    <h1>项目策划任务书</h1>
+                </div>
+                <div class="header-user">
+                    <span>👤 管理员</span>
+                    <span>|</span>
+                    <span>2026-04-14</span>
+                </div>
+            </div>
+            
+            <!-- 内容区 -->
+            <div class="content">
+                <!-- 面包屑 -->
+                <div class="breadcrumb">
+                    <a href="数据面板.html">首页</a>
+                    <span>/</span>
+                    <a href="项目管理首页.html">项目管理</a>
+                    <span>/</span>
+                    <span>项目策划任务书</span>
+                </div>
+
+                <!-- 文档容器 -->
+                <div class="document-container">
+                    <!-- 文档头部 -->
+                    <div class="document-header">
+                        <h2>📋 项目策划 / 任务书</h2>
+                        <p>用于查看项目背景、目标与节点目标摘要，并可进入编辑页面继续完善</p>
+                    </div>
+
+                    <!-- 元信息 -->
+                    <div class="meta-section">
+                        <div class="meta-item">
+                            <span>项目名称</span>
+                            <strong>2026 年职业技能认定项目</strong>
+                        </div>
+                        <div class="meta-item">
+                            <span>项目编号</span>
+                            <strong>RD-2026-001</strong>
+                        </div>
+                        <div class="meta-item">
+                            <span>项目经理</span>
+                            <strong>张晓峰</strong>
+                        </div>
+                        <div class="meta-item">
+                            <span>当前状态</span>
+                            <strong>进行中</strong>
+                        </div>
+                    </div>
+
+                    <!-- 进度 -->
+                    <div class="progress-section">
+                        <div class="progress-header">
+                            <strong>📊 节点目标完成情况</strong>
+                            <span id="progressText">0/4 节点目标已完成</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-value" id="progressValue" style="width: 0%;"></div>
+                        </div>
+                    </div>
+
+                    <!-- 文档内容 -->
+                    <div class="document-body">
+                        <!-- 项目背景 -->
+                        <div class="doc-section">
+                            <h3><span class="section-number">1</span>项目背景与目的</h3>
+                            <p>面向合作企业开展年度职业技能认定准备工作，提前完成组织策划、人员配置、进度编排和风险识别，确保后续认定实施具备统一口径、统一资料和统一时间安排。</p>
+                        </div>
+
+                        <!-- 项目目标 -->
+                        <div class="doc-section">
+                            <h3><span class="section-number">2</span>项目总体目标</h3>
+                            <ul>
+                                <li><strong>质量目标：</strong>五类表单信息完整、字段一致、可追溯</li>
+                                <li><strong>工期目标：</strong>在考试日前完成全部准备工作与审核流转</li>
+                                <li><strong>费用目标：</strong>人力、资源和费用估算可支撑实施排期</li>
+                                <li><strong>交付目标：</strong>导出项目资料包并完成外发审核</li>
+                            </ul>
+                        </div>
+
+                        <!-- 节点目标 -->
+                        <div class="doc-section">
+                            <h3><span class="section-number">3</span>节点目标</h3>
+                            <div class="milestone-list">
+                                <label class="milestone-item" data-milestone>
+                                    <input type="checkbox" data-milestone-check>
+                                    <div class="milestone-content">
+                                        <strong>节点目标 1</strong>
+                                        <span>完成项目基本信息、背景与总体目标确认</span>
+                                    </div>
+                                </label>
+                                <label class="milestone-item" data-milestone>
+                                    <input type="checkbox" data-milestone-check>
+                                    <div class="milestone-content">
+                                        <strong>节点目标 2</strong>
+                                        <span>完成成员安排、WBS 分解和资源估算</span>
+                                    </div>
+                                </label>
+                                <label class="milestone-item" data-milestone>
+                                    <input type="checkbox" data-milestone-check>
+                                    <div class="milestone-content">
+                                        <strong>节点目标 3</strong>
+                                        <span>完成进度计划与考试前准备事项确认</span>
+                                    </div>
+                                </label>
+                                <label class="milestone-item" data-milestone>
+                                    <input type="checkbox" data-milestone-check>
+                                    <div class="milestone-content">
+                                        <strong>节点目标 4</strong>
+                                        <span>完成风险识别与资料导出，进入审核流转</span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 工具栏 -->
+                    <div class="toolbar">
+                        <div class="toolbar-left">
+                            <button class="button" id="editBtn" onclick="window.location.href='项目策划任务书-编辑.html'">
+                                <span>✏️</span> 编辑表单
+                            </button>
+                            <button class="button-secondary" id="saveDraftBtn">
+                                <span>💾</span> 保存草稿
+                            </button>
+                            <button class="button-secondary" id="submitBtn">
+                                <span>📤</span> 提交审核
+                            </button>
+                        </div>
+                        <div class="toolbar-right">
+                            <button class="button-ghost" onclick="window.location.href='项目管理首页.html'">
+                                <span>←</span> 返回工作台
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 底部导航 -->
+                    <div class="toolbar" style="background: white; border-top: 1px dashed var(--border);">
+                        <div class="toolbar-left">
+                            <button class="button-secondary" onclick="showToast('已经是第一步了', 'warning')">
+                                <span>←</span> 上一步
+                            </button>
+                        </div>
+                        <div class="toolbar-right">
+                            <button class="button" onclick="window.location.href='项目成员.html'">
+                                下一步：项目成员 <span>→</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 底部间距 -->
+                <div style="height: 40px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast 容器 -->
+    <div class="toast-stack" id="toastStack"></div>
+
+    <script>
+        // 初始化侧边栏展开/收起
+        function toggleArchiveSubmenu(event) {
+            event.stopPropagation();
+            const archiveMenu = document.getElementById('archiveMenu');
+            const archiveSubmenu = document.getElementById('archiveSubmenu');
+            if (!archiveMenu || !archiveSubmenu) return;
+            const arrow = archiveMenu.querySelector('.sidebar-arrow');
+            archiveMenu.classList.toggle('expanded');
+            archiveSubmenu.classList.toggle('expanded');
+            if (arrow) {
+                if (archiveMenu.classList.contains('expanded')) {
+                    arrow.style.transform = 'rotate(90deg)';
+                } else {
+                    arrow.style.transform = 'rotate(0deg)';
+                }
+            }
+        }
+
+        function initSidebar() {
+            const projectMenu = document.getElementById('projectMenu');
+            const projectSubmenu = document.getElementById('projectSubmenu');
+            const processMenu = document.getElementById('processMenu');
+            const processSubmenu = document.getElementById('processSubmenu');
+            
+            projectMenu.addEventListener('click', (e) => {
+                e.stopPropagation();
+                projectMenu.classList.toggle('expanded');
+                projectSubmenu.classList.toggle('expanded');
+            });
+            
+            processMenu.addEventListener('click', (e) => {
+                e.stopPropagation();
+                processMenu.classList.toggle('expanded');
+                processSubmenu.classList.toggle('expanded');
+            });
+        }
+
+        // 显示 Toast
+        function showToast(message, type = '') {
+            const stack = document.getElementById('toastStack');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            stack.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // 更新进度
+        function updateProgress() {
+            const checkboxes = document.querySelectorAll('[data-milestone-check]');
+            const checked = document.querySelectorAll('[data-milestone-check]:checked');
+            const progress = (checked.length / checkboxes.length) * 100;
+            
+            document.getElementById('progressValue').style.width = progress + '%';
+            document.getElementById('progressText').textContent = `${checked.length}/${checkboxes.length} 节点目标已完成`;
+            
+            // 更新里程碑样式
+            document.querySelectorAll('[data-milestone]').forEach(item => {
+                const checkbox = item.querySelector('input[type="checkbox"]');
+                if (checkbox.checked) {
+                    item.classList.add('completed');
+                } else {
+                    item.classList.remove('completed');
+                }
+            });
+        }
+
+        // 绑定事件
+        function bindEvents() {
+            // 初始化侧边栏
+            initSidebar();
+
+            // 复选框变化
+            document.querySelectorAll('[data-milestone-check]').forEach(checkbox => {
+                checkbox.addEventListener('change', () => {
+                    updateProgress();
+                    showToast('进度已更新', 'success');
+                });
+            });
+
+            // 编辑按钮
+            document.getElementById('editBtn').addEventListener('click', () => {
+                showToast('进入编辑模式', 'success');
+            });
+
+            // 保存草稿
+            document.getElementById('saveDraftBtn').addEventListener('click', () => {
+                showToast('草稿已保存', 'success');
+            });
+
+            // 提交审核
+            document.getElementById('submitBtn').addEventListener('click', () => {
+                const checked = document.querySelectorAll('[data-milestone-check]:checked');
+                if (checked.length < 4) {
+                    showToast('请先完成所有节点目标', 'warning');
+                } else {
+                    showToast('已提交审核', 'success');
+                }
+            });
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            bindEvents();
+            updateProgress();
+        });
+    </script>
+<script src="common.js"></script>
+</body>
+</html>

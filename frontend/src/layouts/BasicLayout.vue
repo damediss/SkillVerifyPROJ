@@ -1,14 +1,39 @@
 <script setup lang="ts">
 import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons-vue'
-import { ref } from 'vue'
-import { RouterView, useRoute } from 'vue-router'
+import { ref, watch } from 'vue'
+import { RouterView, useRoute, useRouter } from 'vue-router'
 
 const collapsed = ref(false)
 const route = useRoute()
+const router = useRouter()
 
-const selectedKeys = () => {
-  const name = route.name
-  return name ? [String(name)] : ['home']
+const selectedKeys = ref<string[]>(['home'])
+const openKeys = ref<string[]>([])
+
+function computeOpenKeys(path: string): string[] {
+  const keys: string[] = []
+  if (path.startsWith('/projects') || path.startsWith('/archives')) {
+    keys.push('menu-task-mgmt')
+  }
+  if (path.startsWith('/flow')) {
+    keys.push('menu-flow')
+    if (path.startsWith('/flow/prep')) keys.push('flow-prep-nest')
+    if (path === '/flow/theory' || path === '/flow/practical') keys.push('flow-mid-nest')
+    if (path === '/flow/archive' || path === '/flow/subsidy') keys.push('flow-after-nest')
+  }
+  if (path.startsWith('/material')) keys.push('menu-material')
+  return keys
+}
+
+function syncMenuFromRoute() {
+  selectedKeys.value = [String(route.name ?? 'home')]
+  openKeys.value = computeOpenKeys(route.path)
+}
+
+watch(() => route.fullPath, syncMenuFromRoute, { immediate: true })
+
+function go(path: string) {
+  void router.push(path)
 }
 </script>
 
@@ -37,10 +62,81 @@ const selectedKeys = () => {
         <span v-if="!collapsed">认定管理</span>
         <span v-else>认定</span>
       </div>
-      <a-menu :selected-keys="selectedKeys()" mode="inline">
-        <a-menu-item key="home">
-          <router-link to="/">首页</router-link>
+      <a-menu
+        v-model:open-keys="openKeys"
+        v-model:selected-keys="selectedKeys"
+        mode="inline"
+      >
+        <a-menu-item key="home" @click="go('/')">
+          首页
         </a-menu-item>
+        <a-menu-item key="dashboard" @click="go('/dashboard')">
+          数据面板
+        </a-menu-item>
+
+        <a-sub-menu key="menu-task-mgmt" title="任务管理">
+          <a-menu-item key="projects-home" @click="go('/projects')">
+            任务准备
+          </a-menu-item>
+          <a-menu-item key="projects-order" @click="go('/projects/order')">
+            我要下单
+          </a-menu-item>
+          <a-menu-item key="archives-root" @click="go('/archives')">
+            任务档案
+          </a-menu-item>
+        </a-sub-menu>
+
+        <a-sub-menu key="menu-flow" title="认定流程">
+          <a-menu-item key="flow-task-select" @click="go('/flow/task-select')">
+            任务选择
+          </a-menu-item>
+
+          <a-sub-menu key="flow-prep-nest" title="认定筹备">
+            <a-menu-item key="flow-prep-students" @click="go('/flow/prep/students')">
+              学员资料
+            </a-menu-item>
+            <a-menu-item key="flow-prep-examiners" @click="go('/flow/prep/examiners')">
+              考评员配置
+            </a-menu-item>
+            <a-menu-item key="flow-prep-rooms" @click="go('/flow/prep/rooms')">
+              考场配置
+            </a-menu-item>
+          </a-sub-menu>
+
+          <a-menu-item key="flow-pre-exam" @click="go('/flow/pre-exam')">
+            认定前
+          </a-menu-item>
+
+          <a-sub-menu key="flow-mid-nest" title="认定中">
+            <a-menu-item key="flow-theory" @click="go('/flow/theory')">
+              理论笔试
+            </a-menu-item>
+            <a-menu-item key="flow-practical" @click="go('/flow/practical')">
+              实操考试
+            </a-menu-item>
+          </a-sub-menu>
+
+          <a-sub-menu key="flow-after-nest" title="认定后">
+            <a-menu-item key="flow-archive" @click="go('/flow/archive')">
+              认定归档
+            </a-menu-item>
+            <a-menu-item key="flow-subsidy" @click="go('/flow/subsidy')">
+              申领补贴
+            </a-menu-item>
+          </a-sub-menu>
+        </a-sub-menu>
+
+        <a-sub-menu key="menu-material" title="物料库管理">
+          <a-menu-item key="material-examiners" @click="go('/material/examiners')">
+            考评员信息
+          </a-menu-item>
+          <a-menu-item key="material-exam-rooms" @click="go('/material/exam-rooms')">
+            考场信息
+          </a-menu-item>
+          <a-menu-item key="material-devices" @click="go('/material/devices')">
+            考试设备
+          </a-menu-item>
+        </a-sub-menu>
       </a-menu>
     </a-layout-sider>
     <a-layout>

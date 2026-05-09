@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>考评员资料（任务档案） - 认定工作流程</title>
+  <link rel="stylesheet" href="common.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background: #f0f2f5; color: #1f2937; }
+    .container { display: flex; height: 100vh; }
+    .sidebar { width: 220px; background: #fff; border-right: 1px solid #e8e8e8; padding: 16px 0; flex-shrink: 0; overflow-y: auto; }
+    .sidebar-logo { padding: 0 16px 16px; border-bottom: 1px solid #f0f0f0; margin-bottom: 8px; }
+    .sidebar-logo h2 { font-size: 16px; font-weight: 600; }
+    .sidebar-logo p { font-size: 12px; color: #8c8c8c; margin-top: 4px; }
+    .sidebar-item { padding: 12px 16px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; user-select: none; }
+    .sidebar-item:hover { background: #f5f5f5; }
+    .sidebar-item-content { display: flex; align-items: center; gap: 10px; }
+    .sidebar-icon { font-size: 16px; width: 20px; text-align: center; }
+    .sidebar-arrow { font-size: 12px; color: #bfbfbf; transition: transform 0.3s; }
+    .sidebar-item.expanded .sidebar-arrow { transform: rotate(90deg); }
+    .sidebar-sublist { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
+    .sidebar-sublist.expanded { max-height: 1200px; }
+    .sidebar-subitem { padding: 10px 16px 10px 46px; cursor: pointer; font-size: 14px; color: #595959; display: flex; align-items: center; gap: 8px; }
+    .sidebar-subitem:hover { background: #f5f5f5; color: #1890ff; }
+    .sidebar-subitem.active { background: rgba(24,144,255,0.2); color: #1890ff; border-right: 3px solid #1890ff; }
+
+    .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    .header { height: 64px; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; }
+    .header h1 { font-size: 18px; }
+    .content { flex: 1; padding: 24px; overflow-y: auto; }
+    .breadcrumb { font-size: 13px; color: #999; margin-bottom: 16px; }
+    .breadcrumb a { color: #1890ff; text-decoration: none; }
+    .breadcrumb span { margin: 0 8px; color: #d9d9d9; }
+
+    .card { background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); padding: 20px; margin-bottom: 16px; }
+    .card h2 { font-size: 16px; margin-bottom: 8px; }
+    .muted { font-size: 13px; color: #64748b; line-height: 1.6; }
+
+    .toolbar { display:flex; gap: 10px; flex-wrap: wrap; align-items:center; justify-content: space-between; margin-top: 10px; }
+    .toolbar-left { display:flex; gap: 10px; flex-wrap: wrap; align-items:center; }
+    .btn { border: 1px solid rgba(0,0,0,.12); background: #fff; padding: 8px 12px; border-radius: 10px; cursor: pointer; font-size: 13px; }
+    .btn.ghost { background: rgba(2,6,23,.04); }
+    .input { border: 1px solid rgba(0,0,0,.12); border-radius: 10px; padding: 8px 10px; font-size: 13px; min-width: 240px; }
+    .select { border: 1px solid rgba(0,0,0,.12); border-radius: 10px; padding: 8px 10px; font-size: 13px; min-width: 320px; background: #fff; }
+
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 10px 12px; border-bottom: 1px solid rgba(0,0,0,.06); text-align:left; font-size: 13px; vertical-align: middle; }
+    th { background: rgba(2,6,23,.03); color: #64748b; font-weight: 600; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size: 12px; }
+    .tag { font-size: 12px; padding: 2px 8px; border-radius: 999px; border: 1px solid rgba(0,0,0,.10); background: rgba(2,6,23,.03); color: #64748b; display:inline-flex; align-items:center; gap: 6px; }
+    .tag.leader { background: rgba(59,130,246,.14); border-color: rgba(59,130,246,.24); color: #1e40af; }
+    .pill { display:inline-flex; gap: 6px; align-items:center; padding: 4px 10px; border-radius: 999px; border: 1px solid rgba(0,0,0,.10); background: rgba(2,6,23,.03); color: #64748b; font-size: 12px; }
+    .pill.ok { background: rgba(16,185,129,.12); border-color: rgba(16,185,129,.22); color: #10b981; }
+    .pill.warn { background: rgba(245,158,11,.14); border-color: rgba(245,158,11,.24); color: #f59e0b; }
+    .pill.bad { background: rgba(239,68,68,.12); border-color: rgba(239,68,68,.22); color: #ef4444; }
+    .link { border:none; background:transparent; color:#1890ff; cursor:pointer; padding:0; font-size: 13px; }
+
+    /* Modal */
+    .mask { position: fixed; inset: 0; background: rgba(0,0,0,.38); display: none; align-items: center; justify-content: center; padding: 20px; z-index: 10000; }
+    .mask.show { display: flex; }
+    .modal { width: min(980px, 100%); background: #fff; border-radius: 14px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,.25); }
+    .mhead { padding: 14px 16px; display:flex; align-items:center; justify-content: space-between; border-bottom: 1px solid rgba(0,0,0,.06); }
+    .mhead h3 { font-size: 15px; }
+    .mbody { padding: 16px; max-height: 72vh; overflow:auto; }
+    .mfoot { padding: 14px 16px; display:flex; justify-content: flex-end; gap: 10px; border-top: 1px solid rgba(0,0,0,.06); }
+    .step { border: 1px solid rgba(0,0,0,.08); border-radius: 12px; padding: 12px; background: rgba(2,6,23,.02); margin-top: 10px; }
+    .hint { font-size: 12px; color:#64748b; line-height: 1.6; }
+
+    .toast { position: fixed; top: 18px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,.82); color:#fff; padding: 10px 14px; border-radius: 10px; z-index: 10001; font-size: 13px; display:none; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="sidebar">
+    <div class="sidebar-logo"><h2>认定工作流程</h2><p>系统原型</p></div>
+    <div class="sidebar-item" onclick="window.location.href='数据面板.html'">
+      <div class="sidebar-item-content"><span class="sidebar-icon">📊</span><span>数据面板</span></div>
+    </div>
+    <div class="sidebar-item expanded" id="projectMenu">
+      <div class="sidebar-item-content"><span class="sidebar-icon">📁</span><span>任务管理</span></div>
+      <span class="sidebar-arrow">▶</span>
+    </div>
+    <div class="sidebar-sublist expanded" id="projectSubmenu">
+      <div class="sidebar-subitem" onclick="window.location.href='项目管理首页.html'"><span>📋</span> 任务准备</div>
+      <div class="sidebar-subitem" onclick="window.location.href='我要下单.html'"><span>🛒</span> 我要下单</div>
+      <div class="sidebar-subitem active" id="taskArchiveEntry" onclick="window.location.href='任务档案.html'"><span>📦</span> 任务档案</div>
+    </div>
+    <div class="sidebar-item" id="processMenu">
+      <div class="sidebar-item-content"><span class="sidebar-icon">📋</span><span>认定流程</span></div>
+      <span class="sidebar-arrow">▶</span>
+    </div>
+    <div class="sidebar-sublist" id="processSubmenu"></div>
+  </div>
+
+  <div class="main-content">
+    <div class="header">
+      <h1>👷 考评员资料（任务档案）</h1>
+      <div style="font-size:14px;color:#666;">👤 管理员</div>
+    </div>
+    <div class="content">
+      <div class="breadcrumb">
+        <a href="数据面板.html">首页</a><span>/</span>
+        <a href="任务档案.html">任务档案</a><span>/</span>
+        <span>考评员资料</span>
+      </div>
+
+      <div class="card">
+        <h2>按项目归档查看</h2>
+        <div class="muted">查看该项目的考评员信息，以及考评员准备/产出的实操考试材料（基于“任务发放/提交/复核”原型数据汇总）。</div>
+        <div class="toolbar">
+          <div class="toolbar-left">
+            <select class="select" id="taskSelect"></select>
+            <button class="btn ghost" id="btnBack">← 返回任务档案</button>
+          </div>
+          <div class="toolbar-left">
+            <input class="input" id="kw" placeholder="搜索：姓名/题目/科目" />
+            <button class="btn" id="btnRefresh">刷新</button>
+          </div>
+        </div>
+        <div class="hint" style="margin-top:10px;">
+          当前项目：<span class="mono" id="projCode">-</span> <span id="projName" class="hint"></span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>考评员信息（本项目）</h2>
+        <div class="hint" id="groupMeta">-</div>
+        <div style="margin-top:10px;">
+          <table>
+            <thead>
+              <tr>
+                <th>姓名</th>
+                <th>证号</th>
+                <th>工种范围</th>
+                <th>角色</th>
+              </tr>
+            </thead>
+            <tbody id="evalTbody"></tbody>
+          </table>
+          <div class="hint" id="evalEmpty" style="display:none; padding:12px 6px;">该项目暂无“考评员配置”数据。</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>实操考试材料（本项目）</h2>
+        <div class="muted">材料来源：实操任务发放 → 考评员填写/提交 → 组长复核；此处按任务维度归档。</div>
+        <div style="margin-top:10px;">
+          <table>
+            <thead>
+              <tr>
+                <th>考评员</th>
+                <th>科目/题目</th>
+                <th>状态</th>
+                <th>更新时间</th>
+                <th style="width:120px;">操作</th>
+              </tr>
+            </thead>
+            <tbody id="taskTbody"></tbody>
+          </table>
+          <div class="hint" id="taskEmpty" style="display:none; padding:12px 6px;">该项目暂无实操任务材料记录。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="mask" id="mask" role="dialog" aria-modal="true">
+  <div class="modal">
+    <div class="mhead">
+      <h3 id="mTitle">材料详情</h3>
+      <button class="btn" id="mClose">✕</button>
+    </div>
+    <div class="mbody">
+      <div class="hint" id="mMeta">-</div>
+      <div id="mBody"></div>
+    </div>
+    <div class="mfoot">
+      <button class="btn" id="mOk">关闭</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="common.js"></script>
+<script>
+  const TASKS = [
+    { code: 'RD-2026-001', name: '2026年职业技能认定项目' },
+    { code: 'RD-2026-002', name: '2026年高级技师认定项目' },
+    { code: 'RD-2026-003', name: '2026年第二季度认定项目' },
+    { code: 'RD-2025-004', name: '2025年第四季度认定项目' }
+  ];
+
+  const EVAL_MAP_KEY = 'prep_evaluator_config_by_project_v1';
+  const EVAL_LEGACY_KEY = 'prep_evaluator_config_v1';
+  const GROUP_MAP_KEY = 'prep_evaluator_group_by_project_v1';
+  const GROUP_LEGACY_KEY = 'prep_evaluator_group_v1';
+  const TASK_KEY = 'practical_tasks_v1';
+
+  function jsonGet(key, fallback) {
+    try {
+      const raw = localStorage.getItem(key);
+      if (!raw) return fallback;
+      return JSON.parse(raw);
+    } catch {
+      return fallback;
+    }
+  }
+
+  function showToast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.style.display = 'block';
+    clearTimeout(window.__t);
+    window.__t = setTimeout(() => (el.style.display = 'none'), 1600);
+  }
+
+  function esc(s) {
+    return String(s ?? '')
+      .replaceAll('&','&amp;')
+      .replaceAll('<','&lt;')
+      .replaceAll('>','&gt;')
+      .replaceAll('"','&quot;')
+      .replaceAll("'","&#039;");
+  }
+
+  function pill(status) {
+    if (status === 'assigned') return '<span class="pill warn">已发放</span>';
+    if (status === 'in_progress') return '<span class="pill">填写中</span>';
+    if (status === 'submitted') return '<span class="pill ok">已提交</span>';
+    if (status === 'reviewed') return '<span class="pill ok">已复核</span>';
+    if (status === 'rework') return '<span class="pill bad">需整改</span>';
+    return '<span class="pill">-</span>';
+  }
+
+  function qsTask() {
+    const u = new URLSearchParams(window.location.search);
+    return u.get('task') || localStorage.getItem('currentProjectCode') || TASKS[0].code;
+  }
+
+  function readEvalList(projectCode) {
+    const map = jsonGet(EVAL_MAP_KEY, {});
+    const list = map && map[projectCode];
+    if (Array.isArray(list)) return list;
+    // fallback legacy (treat as current project)
+    const legacy = jsonGet(EVAL_LEGACY_KEY, []);
+    return Array.isArray(legacy) ? legacy : [];
+  }
+
+  function readGroupMeta(projectCode) {
+    const map = jsonGet(GROUP_MAP_KEY, {});
+    const meta = map && map[projectCode];
+    if (meta && typeof meta === 'object') return meta;
+    const legacy = jsonGet(GROUP_LEGACY_KEY, {});
+    return legacy && typeof legacy === 'object' ? legacy : {};
+  }
+
+  function readTasks(projectCode) {
+    const tasks = jsonGet(TASK_KEY, []);
+    const list = Array.isArray(tasks) ? tasks : [];
+    return list.filter(t => String(t.projectCode || '') === String(projectCode || ''));
+  }
+
+  // modal
+  const mask = document.getElementById('mask');
+  function openModal(title, meta, bodyHtml) {
+    document.getElementById('mTitle').textContent = title || '材料详情';
+    document.getElementById('mMeta').textContent = meta || '-';
+    document.getElementById('mBody').innerHTML = bodyHtml || '';
+    mask.classList.add('show');
+  }
+  function closeModal() { mask.classList.remove('show'); }
+  document.getElementById('mClose').addEventListener('click', closeModal);
+  document.getElementById('mOk').addEventListener('click', closeModal);
+  mask.addEventListener('click', (e) => { if (e.target === mask) closeModal(); });
+
+  function render() {
+    const sel = document.getElementById('taskSelect');
+    sel.innerHTML = TASKS.map(t => `<option value="${t.code}">${t.code} — ${t.name}</option>`).join('');
+    sel.value = qsTask();
+    sel.addEventListener('change', () => {
+      localStorage.setItem('currentProjectCode', sel.value);
+      localStorage.setItem('currentProjectName', TASKS.find(x => x.code === sel.value)?.name || '');
+      history.replaceState(null, '', '任务档案-考评员资料.html?task=' + encodeURIComponent(sel.value));
+      renderBody();
+    });
+
+    document.getElementById('btnBack').addEventListener('click', () => {
+      window.location.href = '任务档案.html?task=' + encodeURIComponent(sel.value);
+    });
+    document.getElementById('btnRefresh').addEventListener('click', () => {
+      renderBody();
+      showToast('已刷新');
+    });
+    document.getElementById('kw').addEventListener('input', renderBody);
+
+    renderBody();
+  }
+
+  function renderBody() {
+    const projectCode = document.getElementById('taskSelect').value;
+    const projectName = TASKS.find(x => x.code === projectCode)?.name || localStorage.getItem('currentProjectName') || '';
+    document.getElementById('projCode').textContent = projectCode;
+    document.getElementById('projName').textContent = projectName ? `— ${projectName}` : '';
+
+    const kw = (document.getElementById('kw').value || '').trim().toLowerCase();
+
+    // Evaluators
+    const evals = readEvalList(projectCode);
+    const g = readGroupMeta(projectCode);
+    document.getElementById('groupMeta').textContent =
+      `考评组：${g.groupName || '—'}｜组长：${g.leaderId ? (evals.find(x => x.id === g.leaderId)?.name || '—') : '—'}｜成员：${Array.isArray(g.memberIds) ? g.memberIds.length : evals.length} 人`;
+
+    const evalTbody = document.getElementById('evalTbody');
+    evalTbody.innerHTML = '';
+    const evalRows = (Array.isArray(evals) ? evals : []).filter(x => !kw || [x.name, x.cert, x.skill].some(v => String(v||'').toLowerCase().includes(kw)));
+    document.getElementById('evalEmpty').style.display = evalRows.length ? 'none' : 'block';
+    evalRows.forEach(x => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><strong>${esc(x.name)}</strong></td>
+        <td><span class="mono">${esc(x.cert || '-')}</span></td>
+        <td>${esc(x.skill || '-')}</td>
+        <td>${x.isLeader ? '<span class="tag leader">组长</span>' : '<span class="tag">成员</span>'}</td>
+      `;
+      evalTbody.appendChild(tr);
+    });
+
+    // Tasks as materials
+    const tasks = readTasks(projectCode);
+    const taskTbody = document.getElementById('taskTbody');
+    taskTbody.innerHTML = '';
+    const filteredTasks = tasks.filter(t => {
+      if (!kw) return true;
+      return [t.evaluatorName, t.subject, t.title].some(v => String(v||'').toLowerCase().includes(kw));
+    });
+    document.getElementById('taskEmpty').style.display = filteredTasks.length ? 'none' : 'block';
+    filteredTasks
+      .sort((a,b) => String(b.updatedAt||b.createdAt||'').localeCompare(String(a.updatedAt||a.createdAt||'')))
+      .forEach(t => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${esc(t.evaluatorName || '-')}</strong></td>
+          <td>
+            <div style="font-weight:600;">${esc(t.subject || '-')}｜${esc(t.title || '-')}</div>
+            <div class="hint">题号：<span class="mono">${esc(t.questionId || '-')}</span>｜考评组：${esc(t.groupName || '-')}</div>
+          </td>
+          <td>${pill(t.status)}</td>
+          <td class="hint">${esc(new Date(t.updatedAt || t.createdAt || Date.now()).toLocaleString())}</td>
+          <td><button class="link" data-act="view">查看</button></td>
+        `;
+        tr.querySelector('[data-act="view"]').addEventListener('click', () => viewTask(t));
+        taskTbody.appendChild(tr);
+      });
+  }
+
+  function viewTask(t) {
+    const meta = `项目：${t.projectCode}｜考评员：${t.evaluatorName}｜状态：${t.status}｜截止：${t.dueDate || '-'}｜题号：${t.questionId || '-'}`;
+    const progress = t.progress || { stepScores: {}, note: '' };
+    const submit = t.submit || null;
+    const review = t.review || null;
+
+    const stepsHtml = (t.steps || []).map((s, idx) => {
+      const key = String(idx);
+      const score = progress.stepScores?.[key] ?? '';
+      return `
+        <div class="step">
+          <div style="display:flex; justify-content:space-between; gap:10px; align-items:center;">
+            <div style="font-weight:600;">${esc(s.name)} <span class="hint">（满分 ${esc(s.score)}）</span></div>
+            <span class="pill">${esc(score === '' ? '-' : score)}</span>
+          </div>
+          <div class="hint" style="margin-top:8px;">要点：${Array.isArray(s.points) ? s.points.map(p => '· ' + esc(p)).join(' ') : '-'}</div>
+        </div>
+      `;
+    }).join('');
+
+    const submitHtml = submit ? `<div class="step">
+      <div style="font-weight:600;">提交记录</div>
+      <div class="hint" style="margin-top:6px;">提交时间：${submit.at ? esc(new Date(submit.at).toLocaleString()) : '-'}</div>
+    </div>` : '';
+
+    const reviewHtml = review ? `<div class="step">
+      <div style="font-weight:600;">复核记录</div>
+      <div class="hint" style="margin-top:6px;">复核结果：${esc(review.result || '-')}｜复核时间：${review.at ? esc(new Date(review.at).toLocaleString()) : '-'}</div>
+      <div class="hint" style="margin-top:6px;">复核意见：${esc(review.note || '-')}</div>
+    </div>` : '';
+
+    const noteHtml = `<div class="step">
+      <div style="font-weight:600;">考评说明/备注</div>
+      <div class="hint" style="margin-top:8px; white-space:pre-wrap;">${esc(progress.note || '-')}</div>
+    </div>`;
+
+    openModal(`材料详情｜${t.subject || ''}`, meta, stepsHtml + noteHtml + submitHtml + reviewHtml);
+  }
+
+  document.addEventListener('DOMContentLoaded', render);
+</script>
+</body>
+</html>
+

@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>考务人员清单 - 认定前</title>
+    <link rel="stylesheet" href="common.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f0f2f5; }
+        .container { display: flex; height: 100vh; }
+        .sidebar { width: 220px; background-color: #ffffff; color: #1f2937; border-right: 1px solid #e8e8e8; box-shadow: 2px 0 8px rgba(0, 0, 0, 0.04); padding: 16px 0; flex-shrink: 0; overflow-y: auto; }
+        .sidebar-logo { padding: 0 16px 16px; border-bottom: 1px solid #f0f0f0; margin-bottom: 8px; }
+        .sidebar-logo h2 { font-size: 16px; font-weight: 600; }
+        .sidebar-logo p { font-size: 12px; color: #8c8c8c; margin-top: 4px; }
+        .sidebar-item { padding: 12px 16px; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: space-between; user-select: none; }
+        .sidebar-item:hover { background-color: #f5f5f5; }
+        .sidebar-item.active { background-color: #1890ff; color: #ffffff; }
+        .sidebar-item.active .sidebar-arrow { color: rgba(255, 255, 255, 0.9); }
+        .sidebar-item-content { display: flex; align-items: center; gap: 10px; }
+        .sidebar-icon { font-size: 16px; width: 20px; text-align: center; }
+        .sidebar-arrow { font-size: 12px; transition: transform 0.3s; color: #bfbfbf; }
+        .sidebar-subitem.expanded .sidebar-arrow { transform: rotate(90deg); }
+        .sidebar-item.expanded .sidebar-arrow { transform: rotate(90deg); }
+        .sidebar-sublist { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
+        .sidebar-sublist.expanded { max-height: 1200px; }
+        .sidebar-subitem { padding: 10px 16px 10px 46px; cursor: pointer; transition: all 0.3s; font-size: 14px; color: #595959; display: flex; align-items: center; gap: 8px; }
+        .sidebar-subitem:hover { background-color: #f5f5f5; color: #1890ff; }
+        .sidebar-subitem.active { background-color: rgba(24, 144, 255, 0.2); color: #1890ff; border-right: 3px solid #1890ff; }
+        .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .header { height: 64px; background-color: white; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; }
+        .header h1 { font-size: 18px; color: #1f2937; }
+        .header-user { display: flex; align-items: center; gap: 12px; color: #666; font-size: 14px; }
+        .content { flex: 1; padding: 24px; overflow-y: auto; }
+        .breadcrumb { font-size: 13px; color: #999; margin-bottom: 16px; }
+        .breadcrumb a { color: #1890ff; text-decoration: none; }
+        .breadcrumb span { margin: 0 8px; color: #d9d9d9; }
+        .page-header-section { background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); padding: 24px; margin-bottom: 24px; }
+        .page-header-section h1 { font-size: 22px; color: #1f2937; margin-bottom: 8px; }
+        .page-header-section p { font-size: 14px; color: #666; line-height: 1.6; }
+        .review-bar { display:flex; justify-content: space-between; align-items:center; gap: 12px; flex-wrap: wrap; margin-top: 14px; padding-top: 14px; border-top: 1px solid #eef2f7; }
+        .review-left { display:flex; align-items:center; gap: 10px; flex-wrap: wrap; }
+        .role-select { border: 1px solid #d9d9d9; border-radius: 6px; padding: 8px 10px; font-size: 13px; background: #fff; }
+        .review-tag { font-size: 12px; padding: 4px 10px; border-radius: 999px; border: 1px solid rgba(0,0,0,.08); background: rgba(0,0,0,.03); color: #64748b; }
+        .review-tag.ok { background: #f6ffed; border-color: #b7eb8f; color: #52c41a; }
+        .review-tag.warn { background: #fff7e6; border-color: #ffd591; color: #fa8c16; }
+        .staff-section { background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); margin-bottom: 24px; overflow: hidden; }
+        .staff-section-head { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; padding: 20px 24px; background: #f8fafc; border-bottom: 1px solid #e8e8e8; }
+        .staff-section-head h3 { font-size: 16px; color: #1f2937; }
+        .staff-section-head .hint { font-size: 13px; color: #666; margin-top: 6px; max-width: 640px; }
+        .staff-toolbar { display: flex; gap: 8px; flex-wrap: wrap; }
+        .btn { padding: 8px 16px; border-radius: 6px; font-size: 13px; cursor: pointer; border: none; }
+        .btn-primary { background: #1890ff; color: white; }
+        .btn-primary:hover { background: #40a9ff; }
+        .btn-ghost { background: white; border: 1px solid #d9d9d9; color: #666; }
+        .btn-ghost:hover { border-color: #1890ff; color: #1890ff; }
+        .table-wrap { overflow-x: auto; padding: 0 24px 16px; }
+        table.data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .data-table th { text-align: left; padding: 10px 8px; background: #fafafa; border-bottom: 1px solid #e8e8e8; color: #1f2937; white-space: nowrap; }
+        .data-table td { padding: 8px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
+        .data-table input { width: 100%; min-width: 80px; padding: 6px 8px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 13px; }
+        .data-table .btn-del { padding: 4px 10px; font-size: 12px; color: #ff4d4f; background: #fff1f0; border: 1px solid #ffccc7; border-radius: 4px; cursor: pointer; }
+        .data-table .btn-del:hover { background: #ffe4e0; }
+        .staff-footer { padding: 16px 24px 20px; background: #fafbfd; border-top: 1px solid #f0f0f0; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .staff-footer label { display: flex; align-items: center; gap: 8px; font-size: 14px; color: #1f2937; cursor: pointer; }
+        .staff-footer input[type="checkbox"] { width: 18px; height: 18px; accent-color: #1890ff; }
+        .staff-footer .tag { font-size: 12px; padding: 2px 8px; border-radius: 4px; background: #fff7e6; color: #d48806; }
+        .staff-footer .tag.done { background: #f6ffed; color: #52c41a; }
+        .summary-strip { display: flex; gap: 16px; flex-wrap: wrap; padding: 16px 24px; font-size: 13px; color: #666; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 24px; }
+        .summary-strip strong { color: #1890ff; }
+        .footer-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; padding-top: 24px; border-top: 1px solid #e8e8e8; flex-wrap: wrap; gap: 12px; }
+        .button-secondary { display: inline-flex; align-items: center; padding: 10px 24px; background: white; color: #666; border: 1px solid #d9d9d9; border-radius: 6px; font-size: 14px; cursor: pointer; text-decoration: none; }
+        .button-secondary:hover { color: #1890ff; border-color: #1890ff; }
+        @media (max-width: 768px) {
+            .sidebar { width: 60px; }
+            .sidebar-logo h2, .sidebar-logo p, .sidebar-item span:not(.sidebar-icon), .sidebar-arrow { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="sidebar-logo"><h2>认定工作流程</h2><p>系统原型</p></div>
+            <div class="sidebar-item" onclick="window.location.href='数据面板.html'">
+                <div class="sidebar-item-content"><span class="sidebar-icon">📊</span><span>数据面板</span></div>
+            </div>
+            <div class="sidebar-item" id="projectMenu">
+                <div class="sidebar-item-content"><span class="sidebar-icon">📁</span><span>任务管理</span></div>
+                <span class="sidebar-arrow">▶</span>
+            </div>
+            <div class="sidebar-sublist" id="projectSubmenu">
+                <div class="sidebar-subitem" onclick="window.location.href='项目管理首页.html'"><span>📋</span> 任务准备</div>
+                <div class="sidebar-subitem" onclick="window.location.href='我要下单.html'"><span>🛒</span> 我要下单</div>
+                <div class="sidebar-subitem" id="archiveMenu" onclick="toggleArchiveSubmenu(event)">
+                    <span>📦</span> 任务档案
+                    <span class="sidebar-arrow" style="margin-left: auto;">▶</span>
+                </div>
+                <div class="sidebar-sublist" id="archiveSubmenu">
+                    <div class="sidebar-subitem" onclick="window.location.href='考试材料.html'" style="padding-left: 56px;"><span>📝</span> 考试材料</div>
+                    <div class="sidebar-subitem" onclick="window.location.href='考场资料.html'" style="padding-left: 56px;"><span>🏫</span> 考场资料</div>
+                    <div class="sidebar-subitem" onclick="window.location.href='考生资料.html'" style="padding-left: 56px;"><span>👤</span> 考生资料</div>
+                </div>
+            </div>
+            <div class="sidebar-item active expanded" id="processMenu">
+                <div class="sidebar-item-content"><span class="sidebar-icon">📋</span><span>认定流程</span></div>
+                <span class="sidebar-arrow">▶</span>
+            </div>
+            <div class="sidebar-sublist expanded" id="processSubmenu">
+                <div class="sidebar-subitem" onclick="window.location.href='任务选择.html'"><span>🏠</span> 任务选择</div>
+                <div class="sidebar-subitem" onclick="window.location.href='认定流程首页.html'"><span>📌</span> 流程首页</div>
+                <div class="sidebar-subitem" onclick="window.location.href='认定筹备.html'"><span>🔧</span> 认定筹备</div>
+                <div class="sidebar-subitem active" onclick="window.location.href='认定前.html'"><span>📅</span> 认定前</div>
+                <div class="sidebar-subitem" onclick="window.location.href='理论笔试.html'"><span>📝</span> 理论笔试</div>
+                <div class="sidebar-subitem" onclick="window.location.href='实操考试.html'"><span>🔨</span> 实操考试</div>
+                <div class="sidebar-subitem" onclick="window.location.href='认定归档.html'"><span>📦</span> 认定归档</div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="header">
+                <h1>考务人员清单</h1>
+                <div class="header-user"><span>👤 管理员</span><span>|</span><span>2026-04-29</span></div>
+            </div>
+            <div class="content">
+                <div class="breadcrumb">
+                    <a href="任务选择.html">↩ 项目选择</a><span>/</span>
+                    <a href="认定流程首页.html">认定流程</a><span>/</span>
+                    <a href="认定前.html">认定前</a><span>/</span>
+                    <span>考务人员清单</span>
+                </div>
+                <div class="page-header-section">
+                    <h1>👥 认定前 · 认定考务人员清单</h1>
+                    <p>按四类岗位分别收集与维护人员信息：<strong>考评员</strong>、<strong>督导员</strong>、<strong>监考员</strong>、<strong>考务人员</strong>。支持手工录入、追加行或模拟导入；每类处理完毕后请勾选确认，进度将汇总至认定前总览。</p>
+                    <div class="review-bar">
+                        <div class="review-left">
+                            <span class="review-tag" id="roleTag">当前角色：项目经理</span>
+                            <select class="role-select" id="roleSelect" title="仅用于原型演示的角色切换">
+                                <option value="pm">项目经理（填报）</option>
+                                <option value="supervisor">项目主管（复核）</option>
+                            </select>
+                            <span class="review-tag warn" id="reviewTag">未复核</span>
+                            <span class="review-tag" id="reviewMeta" style="display:none;"></span>
+                        </div>
+                        <div class="review-left">
+                            <button type="button" class="btn btn-primary" id="btnReview" style="display:none;">✅ 复核通过</button>
+                            <button type="button" class="btn btn-ghost" id="btnUnreview" style="display:none;">↩ 取消复核</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="summary-strip">
+                    已完成类别：<strong id="catDoneCount">0</strong> / 4
+                    <span>|</span>
+                    <span>考评员 <strong id="cnt-考评员">0</strong> 人</span>
+                    <span>督导员 <strong id="cnt-督导员">0</strong> 人</span>
+                    <span>监考员 <strong id="cnt-监考员">0</strong> 人</span>
+                    <span>考务人员 <strong id="cnt-考务人员">0</strong> 人</span>
+                </div>
+
+                <div id="sectionsMount"></div>
+
+                <div class="footer-actions">
+                    <a class="button-secondary" href="认定前-考试设备清单.html">← 考试设备清单</a>
+                    <a class="button-secondary" href="认定前.html">返回认定前总览</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const STORAGE_KEY = 'preExam_staff';
+        const ROLE_KEY = 'preExam_role_v1';
+        const REVIEW_KEY = 'preExam_review_v1';
+        const CATEGORIES = [
+            { key: '考评员', icon: '📋', hint: '负责职业技能评价实施与评分，需登记考评员资质与抽调信息。' },
+            { key: '督导员', icon: '🛡️', hint: '负责认定质量督导与过程监督，记录督导员委派与履职范围。' },
+            { key: '监考员', icon: '📝', hint: '负责考场秩序与考纪监督，维护监考排班与责任考场。' },
+            { key: '考务人员', icon: '⚙️', hint: '负责考务组织、资料与现场协调等工作人员（非监考岗）。' }
+        ];
+
+        function defaultState() {
+            const o = {};
+            CATEGORIES.forEach(function(c) {
+                o[c.key] = { complete: false, people: [] };
+            });
+            return o;
+        }
+        function loadState() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (!raw) return defaultState();
+                const parsed = JSON.parse(raw);
+                const base = defaultState();
+                CATEGORIES.forEach(function(c) {
+                    if (parsed[c.key]) {
+                        base[c.key].complete = !!parsed[c.key].complete;
+                        base[c.key].people = Array.isArray(parsed[c.key].people) ? parsed[c.key].people : [];
+                    }
+                });
+                return base;
+            } catch (e) { return defaultState(); }
+        }
+        let staffState = loadState();
+        function saveState() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(staffState));
+            updateSummary();
+        }
+
+        function jsonGet(key, fallback) {
+            try { return JSON.parse(localStorage.getItem(key) || ''); } catch (e) { return fallback; }
+        }
+        function jsonSet(key, value) { localStorage.setItem(key, JSON.stringify(value)); }
+        function isReviewed() {
+            const rv = jsonGet(REVIEW_KEY, {}) || {};
+            return !!rv.staffReviewed;
+        }
+
+        function toggleArchiveSubmenu(event) {
+            event.stopPropagation();
+            const archiveMenu = document.getElementById('archiveMenu');
+            const archiveSubmenu = document.getElementById('archiveSubmenu');
+            if (!archiveMenu || !archiveSubmenu) return;
+            const arrow = archiveMenu.querySelector('.sidebar-arrow');
+            archiveMenu.classList.toggle('expanded');
+            archiveSubmenu.classList.toggle('expanded');
+            if (arrow) arrow.style.transform = archiveMenu.classList.contains('expanded') ? 'rotate(90deg)' : 'rotate(0deg)';
+        }
+        document.getElementById('projectMenu').addEventListener('click', function(e) {
+            if (e.target.closest('.sidebar-subitem')) return;
+            this.classList.toggle('expanded');
+            document.getElementById('projectSubmenu').classList.toggle('expanded');
+        });
+        document.getElementById('processMenu').addEventListener('click', function(e) {
+            if (e.target.closest('.sidebar-subitem')) return;
+            this.classList.toggle('expanded');
+            document.getElementById('processSubmenu').classList.toggle('expanded');
+        });
+        document.querySelectorAll('.sidebar-subitem').forEach(function(item) {
+            item.addEventListener('click', function(e) { e.stopPropagation(); });
+        });
+
+        function uid() { return 'p' + Date.now() + Math.random().toString(36).slice(2, 8); }
+
+        function renderSections() {
+            const mount = document.getElementById('sectionsMount');
+            mount.innerHTML = CATEGORIES.map(function(cat) {
+                const rows = staffState[cat.key].people;
+                const complete = staffState[cat.key].complete;
+                const rowsHtml = rows.length === 0
+                    ? '<tr class="empty-row"><td colspan="6" style="color:#999;padding:20px;">暂无人员，请点击「添加一行」或「导入名单」。</td></tr>'
+                    : rows.map(function(r) {
+                        return '<tr data-id="' + r.id + '" data-cat="' + cat.key + '">' +
+                            '<td><input type="text" data-f="name" value="' + esc(r.name) + '" placeholder="姓名"></td>' +
+                            '<td><input type="text" data-f="idNo" value="' + esc(r.idNo) + '" placeholder="证件号码"></td>' +
+                            '<td><input type="text" data-f="phone" value="' + esc(r.phone) + '" placeholder="联系电话"></td>' +
+                            '<td><input type="text" data-f="org" value="' + esc(r.org) + '" placeholder="单位/部门"></td>' +
+                            '<td><input type="text" data-f="note" value="' + esc(r.note) + '" placeholder="备注"></td>' +
+                            '<td><button type="button" class="btn-del" onclick="removeRow(\'' + cat.key + '\',\'' + r.id + '\')">删除</button></td></tr>';
+                    }).join('');
+                return '<div class="staff-section" data-category="' + cat.key + '">' +
+                    '<div class="staff-section-head">' +
+                    '<div><h3>' + cat.icon + ' ' + cat.key + '</h3><p class="hint">' + cat.hint + '</p></div>' +
+                    '<div class="staff-toolbar">' +
+                    '<button type="button" class="btn btn-primary" onclick="addRow(\'' + cat.key + '\')">＋ 添加一行</button>' +
+                    '<button type="button" class="btn btn-ghost" onclick="mockImport(\'' + cat.key + '\')">导入名单</button>' +
+                    '</div></div>' +
+                    '<div class="table-wrap"><table class="data-table"><thead><tr>' +
+                    '<th style="min-width:88px">姓名</th><th style="min-width:140px">证件号码</th><th style="min-width:110px">联系电话</th>' +
+                    '<th style="min-width:120px">单位/部门</th><th style="min-width:100px">备注</th><th style="width:72px">操作</th></tr></thead><tbody>' +
+                    rowsHtml + '</tbody></table></div>' +
+                    '<div class="staff-footer">' +
+                    '<label><input type="checkbox" data-complete-cat="' + cat.key + '" ' + (complete ? 'checked' : '') + ' onchange="toggleComplete(\'' + cat.key + '\',this)">' +
+                    '<span>本类人员信息已收集并处理完毕</span></label>' +
+                    '<span class="tag ' + (complete ? 'done' : '') + '" data-tag="' + cat.key + '">' + (complete ? '已确认' : '待确认') + '</span></div></div>';
+            }).join('');
+            mount.querySelectorAll('tbody input').forEach(function(inp) {
+                inp.addEventListener('change', syncInputsToState);
+                inp.addEventListener('blur', syncInputsToState);
+            });
+            updateSummary();
+            applyLockIfReviewed();
+        }
+        function esc(s) {
+            if (!s) return '';
+            return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+        }
+        function syncInputsToState() {
+            if (isReviewed()) return;
+            CATEGORIES.forEach(function(cat) {
+                const sec = document.querySelector('.staff-section[data-category="' + cat.key + '"]');
+                if (!sec) return;
+                const people = [];
+                sec.querySelectorAll('tbody tr[data-id]').forEach(function(tr) {
+                    const id = tr.getAttribute('data-id');
+                    const o = { id: id, name: '', idNo: '', phone: '', org: '', note: '' };
+                    tr.querySelectorAll('input[data-f]').forEach(function(inp) {
+                        o[inp.getAttribute('data-f')] = inp.value.trim();
+                    });
+                    people.push(o);
+                });
+                staffState[cat.key].people = people;
+            });
+            saveState();
+        }
+        function addRow(catKey) {
+            if (isReviewed()) { showToast('已复核，禁止修改'); return; }
+            if (!staffState[catKey].people.length) {
+                const sec = document.querySelector('.staff-section[data-category="' + catKey + '"]');
+                const empty = sec.querySelector('.empty-row');
+                if (empty) empty.remove();
+            }
+            staffState[catKey].people.push({ id: uid(), name: '', idNo: '', phone: '', org: '', note: '' });
+            saveState();
+            renderSections();
+        }
+        function removeRow(catKey, rowId) {
+            if (isReviewed()) { showToast('已复核，禁止修改'); return; }
+            staffState[catKey].people = staffState[catKey].people.filter(function(p) { return p.id !== rowId; });
+            saveState();
+            renderSections();
+        }
+        function mockImport(catKey) {
+            if (isReviewed()) { showToast('已复核，禁止修改'); return; }
+            var samples = {
+                '考评员': [{ name: '李伟', idNo: '4501**********1012', phone: '138****2201', org: '评价中心', note: '电工三级' }],
+                '督导员': [{ name: '王静', idNo: '4501**********2034', phone: '139****8830', org: '质量督导科', note: '全程督导' }],
+                '监考员': [{ name: '赵强', idNo: '4501**********3056', phone: '137****1156', org: '考点 A', note: '第一考场' }],
+                '考务人员': [{ name: '陈芳', idNo: '4501**********4078', phone: '136****0092', org: '考务组', note: '资料与签到' }]
+            };
+            var add = samples[catKey] || [{ name: '示例人员', idNo: '', phone: '', org: '', note: '导入示例' }];
+            add.forEach(function(x) {
+                staffState[catKey].people.push({ id: uid(), name: x.name, idNo: x.idNo, phone: x.phone, org: x.org, note: x.note });
+            });
+            saveState();
+            renderSections();
+            showToast('已导入示例名单（原型）');
+        }
+        function toggleComplete(catKey, el) {
+            if (isReviewed()) { el.checked = !el.checked; showToast('已复核，禁止修改'); return; }
+            staffState[catKey].complete = el.checked;
+            saveState();
+            var tag = document.querySelector('[data-tag="' + catKey + '"]');
+            if (tag) {
+                tag.textContent = el.checked ? '已确认' : '待确认';
+                tag.classList.toggle('done', el.checked);
+            }
+            updateSummary();
+        }
+        function updateSummary() {
+            var done = 0;
+            CATEGORIES.forEach(function(c) {
+                if (staffState[c.key].complete) done++;
+                var n = staffState[c.key].people.length;
+                var el = document.getElementById('cnt-' + c.key);
+                if (el) el.textContent = n;
+            });
+            document.getElementById('catDoneCount').textContent = done;
+            syncReviewButtonState();
+        }
+
+        function applyRoleUI() {
+            const role = localStorage.getItem(ROLE_KEY) || 'pm';
+            document.getElementById('roleTag').textContent = '当前角色：' + (role === 'supervisor' ? '项目主管' : '项目经理');
+            document.getElementById('btnReview').style.display = role === 'supervisor' ? 'inline-flex' : 'none';
+            document.getElementById('btnUnreview').style.display = role === 'supervisor' ? 'inline-flex' : 'none';
+        }
+        function refreshReviewTag() {
+            const tag = document.getElementById('reviewTag');
+            const meta = document.getElementById('reviewMeta');
+            const rv = jsonGet(REVIEW_KEY, {}) || {};
+            if (rv.staffReviewed) {
+                tag.classList.remove('warn');
+                tag.classList.add('ok');
+                tag.textContent = '已复核';
+                meta.style.display = 'inline-flex';
+                meta.textContent = '复核：' + (rv.by || '项目主管') + ' · ' + (rv.at ? new Date(rv.at).toLocaleString() : '');
+            } else {
+                tag.classList.remove('ok');
+                tag.classList.add('warn');
+                tag.textContent = '未复核';
+                meta.style.display = 'none';
+            }
+        }
+        function applyLockIfReviewed() {
+            if (!isReviewed()) return;
+            const mount = document.getElementById('sectionsMount');
+            if (!mount) return;
+            mount.querySelectorAll('input,button,select,textarea').forEach(function(el){ el.disabled = true; });
+        }
+        function allCatsDone() {
+            return Number(document.getElementById('catDoneCount').textContent || '0') >= 4;
+        }
+        function syncReviewButtonState() {
+            const btn = document.getElementById('btnReview');
+            if (!btn) return;
+            btn.disabled = !allCatsDone() || isReviewed();
+        }
+        function doReview() {
+            if (!allCatsDone()) { showToast('请先完成 4 类考务人员办结确认'); return; }
+            const rv = jsonGet(REVIEW_KEY, {}) || {};
+            rv.staffReviewed = true;
+            rv.by = rv.by || '项目主管';
+            rv.at = new Date().toISOString();
+            jsonSet(REVIEW_KEY, rv);
+            refreshReviewTag();
+            applyLockIfReviewed();
+            syncReviewButtonState();
+            showToast('复核通过，已锁定修改');
+        }
+        function undoReview() {
+            const rv = jsonGet(REVIEW_KEY, {}) || {};
+            rv.staffReviewed = false;
+            jsonSet(REVIEW_KEY, rv);
+            refreshReviewTag();
+            showToast('已取消复核（编辑已恢复）');
+            renderSections();
+        }
+        function initRoleAndReview() {
+            const sel = document.getElementById('roleSelect');
+            const saved = localStorage.getItem(ROLE_KEY) || 'pm';
+            sel.value = saved;
+            sel.addEventListener('change', function() {
+                localStorage.setItem(ROLE_KEY, sel.value);
+                applyRoleUI();
+            });
+            document.getElementById('btnReview').addEventListener('click', doReview);
+            document.getElementById('btnUnreview').addEventListener('click', undoReview);
+            applyRoleUI();
+            refreshReviewTag();
+            syncReviewButtonState();
+        }
+        function showToast(msg) {
+            var t = document.createElement('div');
+            t.textContent = msg;
+            t.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.8);color:#fff;padding:12px 24px;border-radius:6px;z-index:9999;font-size:14px;';
+            document.body.appendChild(t);
+            setTimeout(function() { t.remove(); }, 2000);
+        }
+
+        renderSections();
+        initRoleAndReview();
+    </script>
+<script src="common.js"></script>
+</body>
+</html>
