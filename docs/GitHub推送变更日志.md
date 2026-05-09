@@ -8,7 +8,7 @@
 
 ### Push：按需 Ant Design Vue、favicon 与 Vite 精简（`20b7be2`）
 
-**区间：** `47759ac..8f56eda` → `main`（代码 `20b7be2`，变更日志 `8f56eda`）
+**区间：** `47759ac..9325a42` → `main`（`20b7be2` 前端修复，`8f56eda` / `9325a42` 变更日志）
 
 **摘要：**
 
