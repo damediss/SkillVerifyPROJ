@@ -8,7 +8,7 @@
 
 ### Push：按需 Ant Design Vue、favicon 与 Vite 精简（`20b7be2`）
 
-**区间：** `47759ac..20b7be2` → `main`
+**区间：** `47759ac..8f56eda` → `main`（代码 `20b7be2`，变更日志 `8f56eda`）
 
 **摘要：**
 
@@ -16,6 +16,7 @@
 - **`frontend/src/api/http.ts`：** `message` 改为从 `ant-design-vue/es/message` 默认导入。
 - **`frontend/vite.config.ts`：** 维持仅 `noDiscovery: true`，去掉开发态别名与 dayjs 预构建列表。
 - **`frontend/index.html` + `frontend/public/favicon.svg`：** 增加 SVG 图标引用，消除 `/favicon.ico` 404。
+- **`docs/GitHub推送变更日志.md`：** 追加本节。
 
 ---
 
