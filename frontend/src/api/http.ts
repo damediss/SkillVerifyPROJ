@@ -1,5 +1,5 @@
 import axios, { type AxiosError } from 'axios'
-import { message } from 'ant-design-vue'
+import message from 'ant-design-vue/es/message'
 
 /** 与《需求规格说明书》第 13 章约定一致：{ code, message, data } */
 export interface ApiEnvelope<T> {
