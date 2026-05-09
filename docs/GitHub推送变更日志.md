@@ -6,6 +6,19 @@
 
 ## 2026-05-09
 
+### Push：按需 Ant Design Vue、favicon 与 Vite 精简（`20b7be2`）
+
+**区间：** `47759ac..20b7be2` → `main`
+
+**摘要：**
+
+- **`frontend/src/main.ts`：** 改为按需 `app.use`（`layout` / `menu` / `button` / `typography` / `spin` / `alert` / `descriptions` / `empty`），避免全量 Ant Design Vue 引入 `vc-picker`+`dayjs` CJS 插件链；在保留 `optimizeDeps.noDiscovery` 时浏览器不再出现 dayjs `default` 导出错误。
+- **`frontend/src/api/http.ts`：** `message` 改为从 `ant-design-vue/es/message` 默认导入。
+- **`frontend/vite.config.ts`：** 维持仅 `noDiscovery: true`，去掉开发态别名与 dayjs 预构建列表。
+- **`frontend/index.html` + `frontend/public/favicon.svg`：** 增加 SVG 图标引用，消除 `/favicon.ico` 404。
+
+---
+
 ### Push：路由与原型资产（`d37a325`）
 
 **区间：** `5edf35e..d37a325` → `main`
